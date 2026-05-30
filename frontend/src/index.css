@@ -1,0 +1,377 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #0b0f19;
+    --card: rgba(17, 24, 39, 0.7);
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #f3f4f6;
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 3D Movie Card Tilt & Shadow */
+.movie-3d-card-container {
+  perspective: 1000px;
+}
+
+.movie-3d-card {
+  transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.55s ease, border-color 0.55s ease;
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  /* Managed by floating border frame to prevent Z-fighting */
+
+  /* WebKit mask clipping hack to force rounded corner overflow clipping in 3D transform context */
+  mask-image: radial-gradient(white, black);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+.movie-3d-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  pointer-events: none;
+  z-index: 5000;
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.5s ease;
+}
+
+.movie-3d-card:hover::after {
+  transform: translateZ(35px);
+  /* Sits slightly in front of the poster to prevent overlap */
+  border-color: rgba(249, 115, 22, 0.55);
+}
+
+/* Holographic shine radial glare */
+.movie-card-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  mix-blend-mode: screen;
+}
+
+.movie-3d-card:hover {
+  box-shadow:
+    -12px 24px 48px rgba(0, 0, 0, 0.75),
+    0 16px 32px rgba(249, 115, 22, 0.25);
+}
+
+/* 3D Depth Parallax Layers */
+.movie-3d-card * {
+  transform-style: preserve-3d;
+}
+
+.movie-3d-card .aspect-\[2\/3\] {
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover .aspect-\[2\/3\] {
+  transform: translateZ(25px);
+}
+
+.movie-3d-card img {
+  transform: scale(1);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover img {
+  transform: scale(1.06);
+}
+
+.movie-3d-card .absolute.top-2,
+.movie-3d-card .absolute.top-3 {
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover .absolute.top-2,
+.movie-3d-card:hover .absolute.top-3 {
+  transform: translateZ(45px);
+}
+
+.movie-3d-card .absolute.bottom-2,
+.movie-3d-card .absolute.bottom-3 {
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover .absolute.bottom-2,
+.movie-3d-card:hover .absolute.bottom-3 {
+  transform: translateZ(35px);
+}
+
+.movie-3d-card h4,
+.movie-3d-card h3 {
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover h4,
+.movie-3d-card:hover h3 {
+  transform: translateZ(35px);
+}
+
+.movie-3d-card p,
+.movie-3d-card .flex-wrap {
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover p,
+.movie-3d-card:hover .flex-wrap {
+  transform: translateZ(25px);
+}
+
+.movie-3d-card button {
+  transform: translateZ(0px);
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.movie-3d-card:hover button {
+  transform: translateZ(40px);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Pulsing Glow Animation */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(147, 51, 234, 0.15), 0 0 5px rgba(147, 51, 234, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(147, 51, 234, 0.4), 0 0 12px rgba(147, 51, 234, 0.2);
+  }
+}
+
+.animate-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+/* --- Popcorn Popping Loader Overlay --- */
+.popcorn-particle {
+  position: absolute;
+  animation: pop-kernel 1.6s infinite ease-out;
+  background: #fef08a;
+  /* light yellow */
+  border: 2px solid #fef9c3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 8px rgba(254, 240, 138, 0.6);
+  border-radius: 50% 40% 60% 50%;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+@keyframes pop-kernel {
+  0% {
+    transform: translate(0, 10px) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+
+  15% {
+    transform: translate(var(--x), var(--y)) scale(1.3) rotate(var(--r));
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translate(var(--x2), 320px) scale(0.5) rotate(var(--r2));
+    opacity: 0;
+  }
+}
+
+/* --- Success Popcorn Burst Celebration --- */
+.success-popcorn {
+  position: absolute;
+  animation: success-burst-animation 1.1s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+  background: #fef08a;
+  border: 2px solid #fef9c3;
+  border-radius: 50% 45% 55% 50%;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 10px rgba(254, 240, 138, 0.5);
+}
+
+@keyframes success-burst-animation {
+  0% {
+    transform: translate(0, 0) scale(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translate(var(--x), var(--y)) scale(0.8) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+/* --- Dotted Rating Indicator Border Rotation --- */
+@keyframes spin-dotted {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-dotted {
+  animation: spin-dotted 20s infinite linear;
+}
+
+/* --- High Rating > 4.5 animations --- */
+@keyframes gold-pulse {
+
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(253, 224, 71, 0.5), 0 0 20px rgba(253, 224, 71, 0.3);
+    transform: scale(1);
+  }
+
+  50% {
+    text-shadow: 0 0 25px rgba(253, 224, 71, 0.95), 0 0 35px rgba(253, 224, 71, 0.6);
+    transform: scale(1.08);
+  }
+}
+
+.animate-gold-pulse {
+  display: inline-block;
+  animation: gold-pulse 1.3s infinite ease-in-out;
+}
+
+@keyframes spin-dotted-fast {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-dotted-fast {
+  animation: spin-dotted-fast 4s infinite linear;
+}
+
+/* --- GameCorn Pixel Loader Overlay --- */
+.gamecorn-pixel {
+  position: absolute;
+  animation: pixel-pop 1.5s infinite ease-out;
+  background: #10b981; /* neon emerald */
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8), 0 0 20px rgba(139, 92, 246, 0.5);
+  border-radius: 4px; /* square blocky pixel */
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+@keyframes pixel-pop {
+  0% {
+    transform: translate(0, 10px) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    transform: translate(var(--x), var(--y)) scale(1.25) rotate(var(--r));
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--x2), 300px) scale(0.4) rotate(var(--r2));
+    opacity: 0;
+  }
+}
+
+/* --- Success Trophy Achievement Burst --- */
+.success-trophy-star {
+  position: absolute;
+  animation: trophy-burst-animation 1.2s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+  background: #f59e0b; /* amber gold */
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+@keyframes trophy-burst-animation {
+  0% {
+    transform: translate(0, 0) scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(var(--x), var(--y)) scale(0.8) rotate(var(--r));
+    opacity: 0;
+  }
+}

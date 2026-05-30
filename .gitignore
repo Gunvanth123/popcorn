@@ -1,0 +1,36 @@
+# Node dependencies
+node_modules/
+frontend/node_modules/
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
+# Python virtual environment
+backend/venv/
+venv/
+.venv/
+env/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite Database
+backend/popcorn.db
+*.db
+*.sqlite3
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+dist/
+frontend/dist/
