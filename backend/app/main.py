@@ -19,9 +19,26 @@ app = FastAPI(
 )
 
 # CORS middleware configuration
+# allow_origins=["*"] + allow_credentials=True is invalid — browsers block it.
+# Read allowed origins from env var, fallback to safe defaults.
+import os
+
+ALLOWED_ORIGINS_RAW = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://popcorn-roan-five.vercel.app,http://localhost:5173,http://localhost:3000"
+)
+
+# Parse and clean origins (strip whitespace, quotes, and trailing slashes)
+ALLOWED_ORIGINS = [
+    origin.strip().strip("'\"").rstrip("/")
+    for origin in ALLOWED_ORIGINS_RAW.split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, replace with specific origins (e.g., Vercel frontend domain)
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
