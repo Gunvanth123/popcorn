@@ -802,7 +802,8 @@ export default function PopcornDashboard() {
           {/* Carousel */}
           <div
             id={rowId}
-            className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-smooth"
+            className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row"
+            style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
           >
             {items.map((item, idx) => {
               const inWatchlist = isAlreadyInWatchlist(item.title)
@@ -826,18 +827,18 @@ export default function PopcornDashboard() {
                     )}
                     <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
                       {item.poster_url ? (
-                        <img src={item.poster_url} alt={item.title} className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500 animate-in fade-in" />
+                        <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
                           <Film className="w-8 h-8 text-slate-800 mb-1" />
                           <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/70 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5 backdrop-blur-md">
+                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5">
                         <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                         <span>{Number(item.rating || 0).toFixed(1)}</span>
                       </div>
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300 backdrop-blur-sm">
+                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300">
                         {item.category}
                       </div>
                     </div>
@@ -1718,7 +1719,8 @@ export default function PopcornDashboard() {
                       {/* Explorer Matches list */}
                       <div
                         id="discover-row"
-                        className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-smooth"
+                        className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row"
+                        style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
                       >
                         {discoverItems.map((item, idx) => {
                           const inWatchlist = isAlreadyInWatchlist(item.title)
@@ -1737,14 +1739,14 @@ export default function PopcornDashboard() {
                                 <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                                 <div className="aspect-[2/3] bg-slate-900 relative overflow-hidden shrink-0 rounded-t-2xl">
                                   {item.poster_url ? (
-                                    <img src={item.poster_url} alt={item.title} className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500" />
+                                    <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                                   ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
                                       <Film className="w-8 h-8 text-slate-800 mb-1" />
                                       <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                                     </div>
                                   )}
-                                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/70 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5 backdrop-blur-md">
+                                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5">
                                     <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                                     <span>{Number(item.rating || 0).toFixed(1)}</span>
                                   </div>
@@ -2229,7 +2231,7 @@ export default function PopcornDashboard() {
                       <span className="text-xs text-slate-500">Finding similar titles...</span>
                     </div>
                   ) : similarItems.length > 0 ? (
-                    <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
+                    <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar scroll-row" style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}>
                       {similarItems.map((item, idx) => (
                         <div
                           key={idx}
@@ -2238,7 +2240,7 @@ export default function PopcornDashboard() {
                         >
                           <div className="aspect-[2/3] bg-slate-900 rounded-lg overflow-hidden relative mb-2">
                             {item.poster_url ? (
-                              <img src={item.poster_url} className="w-full h-full object-cover group-hover/similar:scale-105 transition-transform duration-300" alt={item.title} />
+                            <img src={item.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={item.title} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 {isGame ? <Gamepad className="w-5 h-5 text-slate-700" /> : <Film className="w-5 h-5 text-slate-700" />}

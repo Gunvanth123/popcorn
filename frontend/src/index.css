@@ -11,67 +11,135 @@
   }
 }
 
+/* ============================================================
+   ROOT — smooth, GPU-composited scrolling foundation
+   ============================================================ */
+html {
+  /* Enable momentum (inertia) scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent pull-to-refresh rubbering the whole page */
+  overscroll-behavior-y: none;
+  /* Native smooth scroll for anchor links */
+  scroll-behavior: smooth;
+  /* Move the entire page to its own compositor layer once */
+  will-change: scroll-position;
+}
+
 body {
   background-color: var(--bg);
   color: var(--text);
   margin: 0;
   font-family: 'Outfit', sans-serif;
   overflow-x: hidden;
+  /* Prevent horizontal overscroll rubber-banding */
+  overscroll-behavior-x: none;
+  /* Tell the browser we will only scroll, not transform the body */
+  will-change: auto;
+  /* Ensure text is rendered with GPU sub-pixel antialiasing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
 }
 
-/* Global Smooth Image Rendering Optimization */
+/* ============================================================
+   IMAGES — removed the blanket will-change / translate3d
+   (creating a GPU compositing layer per-image destroys perf
+   when you have 50-card rows × 20+ rows on screen)
+   ============================================================ */
 img {
+  /* Keep crisp-edges on scaling without promoting every img */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: auto;
+  /* Prevent sub-pixel blurring during transforms */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
+  /* DO NOT put will-change or translate3d here globally */
+  /* it creates hundreds of compositor layers and kills perf */
+  display: block;
 }
 
-/* Custom Scrollbar */
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: rgba(249, 115, 22, 0.6);
 }
 
-/* Glassmorphism Classes */
+/* ============================================================
+   GLASSMORPHISM — contain paint to avoid repaint storms
+   ============================================================ */
 .glass {
-  background: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Contain repaints within this element */
+  contain: paint;
 }
 
-/* 3D Movie Card Tilt & Shadow */
+/* ============================================================
+   HORIZONTAL SCROLL ROWS (recommendation rows)
+   Promote to own layer so scrolling them doesn't repaint main
+   ============================================================ */
+.scroll-row {
+  /* Decouple horizontal scroll from vertical page scroll */
+  overscroll-behavior-x: contain;
+  /* Smooth momentum on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* GPU layer for the row itself, not every child */
+  will-change: transform;
+  transform: translateZ(0);
+  /* Prevent layout recalc from leaking up/down */
+  contain: layout style;
+}
+
+/* ============================================================
+   3D MOVIE CARD — scoped & optimised
+   Key changes:
+   - Removed blanket "* { transform-style: preserve-3d }"
+     (that was compositing EVERY descendant node)
+   - will-change only added on hover via JS (see note)
+   - contain: layout style on idle card
+   ============================================================ */
 .movie-3d-card-container {
   perspective: 1000px;
 }
 
 .movie-3d-card {
-  transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.55s ease, border-color 0.55s ease;
+  transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.45s ease,
+              border-color 0.45s ease;
   transform-style: preserve-3d;
   position: relative;
   overflow: hidden;
   border: none !important;
-  /* Managed by floating border frame to prevent Z-fighting */
+  /* Contain layout & paint when idle — prevents scroll jank from
+     card layout changes propagating to the scroll container */
+  contain: layout style paint;
 
-  /* WebKit mask clipping hack to force rounded corner overflow clipping in 3D transform context */
+  /* Clip rounded corners correctly inside 3D context */
   mask-image: radial-gradient(white, black);
   -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+/* Only promote to GPU layer on hover — not on every card at rest */
+.movie-3d-card:hover {
+  will-change: transform;
+  contain: layout style; /* relax paint containment so 3D layers can spill */
 }
 
 .movie-3d-card::after {
@@ -83,16 +151,16 @@ img {
   pointer-events: none;
   z-index: 5000;
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.5s ease;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-color 0.4s ease;
 }
 
 .movie-3d-card:hover::after {
   transform: translateZ(35px);
-  /* Sits slightly in front of the poster to prevent overlap */
   border-color: rgba(249, 115, 22, 0.55);
 }
 
-/* Holographic shine radial glare */
+/* Holographic shine */
 .movie-card-shine {
   position: absolute;
   top: 0;
@@ -102,7 +170,7 @@ img {
   pointer-events: none;
   z-index: 10;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
   mix-blend-mode: screen;
 }
 
@@ -112,39 +180,39 @@ img {
     0 16px 32px rgba(249, 115, 22, 0.25);
 }
 
-/* 3D Depth Parallax Layers */
-.movie-3d-card * {
-  transform-style: preserve-3d;
-}
-
+/* 3D depth layers — only animate children that need it,
+   NOT using the wildcard selector "*" anymore */
 .movie-3d-card .aspect-\[2\/3\] {
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
 }
 
 .movie-3d-card:hover .aspect-\[2\/3\] {
   transform: translateZ(25px);
 }
 
+/* Images inside cards: only use translate3d on hover, not at rest */
 .movie-3d-card img {
   transform: translate3d(0, 0, 0) scale(1);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  outline: 1px solid transparent;
-  will-change: transform;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: auto;
+  /* No will-change here — let the card container handle compositing */
 }
 
 .movie-3d-card:hover img {
   transform: translate3d(0, 0, 0) scale(1.06);
 }
 
+/* Badges / overlay elements */
 .movie-3d-card .absolute.top-2,
 .movie-3d-card .absolute.top-3 {
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
 }
 
 .movie-3d-card:hover .absolute.top-2,
@@ -155,7 +223,8 @@ img {
 .movie-3d-card .absolute.bottom-2,
 .movie-3d-card .absolute.bottom-3 {
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
 }
 
 .movie-3d-card:hover .absolute.bottom-2,
@@ -166,7 +235,8 @@ img {
 .movie-3d-card h4,
 .movie-3d-card h3 {
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
 }
 
 .movie-3d-card:hover h4,
@@ -177,7 +247,8 @@ img {
 .movie-3d-card p,
 .movie-3d-card .flex-wrap {
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
 }
 
 .movie-3d-card:hover p,
@@ -187,33 +258,33 @@ img {
 
 .movie-3d-card button {
   transform: translateZ(0px);
-  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
 }
 
 .movie-3d-card:hover button {
   transform: translateZ(40px);
 }
 
-/* Hide scrollbar utility */
+/* ============================================================
+   HIDE SCROLLBAR UTILITY
+   ============================================================ */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 .no-scrollbar {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
-/* Pulsing Glow Animation */
+/* ============================================================
+   ANIMATIONS — use transform/opacity only (compositor-only)
+   ============================================================ */
 @keyframes pulse-glow {
-
-  0%,
-  100% {
+  0%, 100% {
     box-shadow: 0 0 15px rgba(147, 51, 234, 0.15), 0 0 5px rgba(147, 51, 234, 0.1);
   }
-
   50% {
     box-shadow: 0 0 25px rgba(147, 51, 234, 0.4), 0 0 12px rgba(147, 51, 234, 0.2);
   }
@@ -228,13 +299,13 @@ img {
   position: absolute;
   animation: pop-kernel 1.6s infinite ease-out;
   background: #fef08a;
-  /* light yellow */
   border: 2px solid #fef9c3;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 8px rgba(254, 240, 138, 0.6);
   border-radius: 50% 40% 60% 50%;
   width: 14px;
   height: 14px;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 @keyframes pop-kernel {
@@ -242,16 +313,13 @@ img {
     transform: translate(0, 10px) scale(0) rotate(0deg);
     opacity: 0;
   }
-
   15% {
     transform: translate(var(--x), var(--y)) scale(1.3) rotate(var(--r));
     opacity: 1;
   }
-
   85% {
     opacity: 0.8;
   }
-
   100% {
     transform: translate(var(--x2), 320px) scale(0.5) rotate(var(--r2));
     opacity: 0;
@@ -269,6 +337,7 @@ img {
   height: 16px;
   pointer-events: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 10px rgba(254, 240, 138, 0.5);
+  will-change: transform, opacity;
 }
 
 @keyframes success-burst-animation {
@@ -276,11 +345,9 @@ img {
     transform: translate(0, 0) scale(0) rotate(0deg);
     opacity: 1;
   }
-
   80% {
     opacity: 0.8;
   }
-
   100% {
     transform: translate(var(--x), var(--y)) scale(0.8) rotate(var(--r));
     opacity: 0;
@@ -289,28 +356,21 @@ img {
 
 /* --- Dotted Rating Indicator Border Rotation --- */
 @keyframes spin-dotted {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .animate-spin-dotted {
   animation: spin-dotted 20s infinite linear;
+  will-change: transform;
 }
 
 /* --- High Rating > 4.5 animations --- */
 @keyframes gold-pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     text-shadow: 0 0 10px rgba(253, 224, 71, 0.5), 0 0 20px rgba(253, 224, 71, 0.3);
     transform: scale(1);
   }
-
   50% {
     text-shadow: 0 0 25px rgba(253, 224, 71, 0.95), 0 0 35px rgba(253, 224, 71, 0.6);
     transform: scale(1.08);
@@ -320,32 +380,30 @@ img {
 .animate-gold-pulse {
   display: inline-block;
   animation: gold-pulse 1.3s infinite ease-in-out;
+  will-change: transform;
 }
 
 @keyframes spin-dotted-fast {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .animate-spin-dotted-fast {
   animation: spin-dotted-fast 4s infinite linear;
+  will-change: transform;
 }
 
 /* --- GameCorn Pixel Loader Overlay --- */
 .gamecorn-pixel {
   position: absolute;
   animation: pixel-pop 1.5s infinite ease-out;
-  background: #10b981; /* neon emerald */
+  background: #10b981;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.8), 0 0 20px rgba(139, 92, 246, 0.5);
-  border-radius: 4px; /* square blocky pixel */
+  border-radius: 4px;
   width: 12px;
   height: 12px;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 @keyframes pixel-pop {
@@ -370,12 +428,13 @@ img {
 .success-trophy-star {
   position: absolute;
   animation: trophy-burst-animation 1.2s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
-  background: #f59e0b; /* amber gold */
+  background: #f59e0b;
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   width: 16px;
   height: 16px;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 @keyframes trophy-burst-animation {
@@ -392,7 +451,9 @@ img {
   }
 }
 
-/* --- Mode Transition Overlay & Animations --- */
+/* ============================================================
+   MODE TRANSITION OVERLAY
+   ============================================================ */
 .screen-transition-overlay {
   position: fixed;
   inset: 0;
@@ -403,6 +464,7 @@ img {
   justify-content: center;
   pointer-events: all;
   animation: screen-overlay-timeline 1.7s forwards cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, backdrop-filter;
 }
 
 @keyframes screen-overlay-timeline {
@@ -440,7 +502,7 @@ img {
 .transition-popcorn-kernel {
   position: absolute;
   animation: screen-popcorn-explosion 1.5s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
-  background: #fef08a; /* light yellow */
+  background: #fef08a;
   border: 2px solid #fef9c3;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 0 12px rgba(254, 240, 138, 0.6);
   border-radius: 50% 40% 60% 50%;
@@ -449,6 +511,7 @@ img {
   pointer-events: none;
   left: 50%;
   top: 50%;
+  will-change: transform, opacity;
 }
 
 @keyframes screen-popcorn-explosion {
@@ -472,6 +535,7 @@ img {
 .transition-bucket {
   animation: bucket-bounce 1.6s ease-in-out infinite;
   filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.4));
+  will-change: transform;
 }
 
 @keyframes bucket-bounce {
@@ -483,12 +547,12 @@ img {
   }
 }
 
-/* GameCorn Retro Transition Elements */
+/* GameCorn Retro Transition */
 .crt-scanlines {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%, 
+    rgba(18, 16, 16, 0) 50%,
     rgba(0, 0, 0, 0.3) 50%
   );
   background-size: 100% 4px;
@@ -499,16 +563,18 @@ img {
 
 .crt-flicker {
   animation: crt-flicker-anim 0.15s infinite;
+  will-change: opacity;
 }
 
 @keyframes crt-flicker-anim {
-  0% { opacity: 0.96; }
-  50% { opacity: 1; }
+  0%   { opacity: 0.96; }
+  50%  { opacity: 1; }
   100% { opacity: 0.97; }
 }
 
 .transition-gamepad {
   animation: gamepad-spin-pulse 1.7s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
+  will-change: transform;
 }
 
 @keyframes gamepad-spin-pulse {

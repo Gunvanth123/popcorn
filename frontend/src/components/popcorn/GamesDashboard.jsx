@@ -423,7 +423,7 @@ export default function GamesDashboard() {
           <button onClick={() => scrollRow(rowId, 'left')} className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-violet-600 hover:border-violet-500 hover:scale-105 active:scale-95">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <div id={rowId} className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-smooth">
+          <div id={rowId} className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row" style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}>
             {items.map((item, idx) => {
               const inLib = isInLibrary(item.title)
               return (
@@ -444,19 +444,19 @@ export default function GamesDashboard() {
                     )}
                     <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
                       {item.poster_url ? (
-                        <img src={item.poster_url} alt={item.title} className="w-full h-full object-cover rounded-t-2xl transition-transform duration-500" />
+                        <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
                           <Gamepad2 className="w-8 h-8 text-slate-800 mb-1" />
                           <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/70 border border-white/10 text-[9px] font-black text-violet-300 flex items-center gap-0.5 backdrop-blur-md">
+                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-violet-300 flex items-center gap-0.5">
                         <Star className="w-2.5 h-2.5 fill-violet-400 text-violet-400" />
                         <span>{Number(item.rating || 0).toFixed(1)}</span>
                       </div>
                       {item.platform && (
-                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300 backdrop-blur-sm truncate max-w-[80%]">{item.platform.split(',')[0]}</div>
+                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300 truncate max-w-[80%]">{item.platform.split(',')[0]}</div>
                       )}
                     </div>
                     <div className="p-3 flex-1 flex flex-col justify-between min-h-0">
