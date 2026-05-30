@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi, popcornApi, gamesApi, rawgApi } from '../../api/client'
 import { Film, Tv, Star, Plus, Check, Loader2, ArrowLeft, TrendingUp, Gamepad, Gamepad2 } from 'lucide-react'
@@ -8,7 +8,34 @@ export default function TrendingTop100() {
   const [trending, setTrending] = useState([])
   const [watchlist, setWatchlist] = useState([])
   const [loading, setLoading] = useState(true)
+  const [visibleCount, setVisibleCount] = useState(24)
+  const sentinelRef = useRef(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (loading || visibleCount >= trending.length) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + 24, trending.length))
+        }
+      },
+      { rootMargin: '200px' }
+    )
+
+    const currentSentinel = sentinelRef.current
+    if (currentSentinel) {
+      observer.observe(currentSentinel)
+    }
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel)
+      }
+      observer.disconnect()
+    }
+  }, [loading, visibleCount, trending.length])
 
   const appMode = localStorage.getItem('popcorn_app_mode') || 'popcorn'
   const isGame = appMode === 'gamecorn'
@@ -26,6 +53,7 @@ export default function TrendingTop100() {
       ])
       setTrending(trendingData)
       setWatchlist(watchlistData)
+      setVisibleCount(24)
     } catch (err) {
       toast.error(isGame ? 'Failed to load trending games' : 'Failed to load trending titles')
     } finally {
@@ -133,28 +161,31 @@ export default function TrendingTop100() {
             <p className="text-slate-400 text-sm">Fetching popular releases...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-            {trending.map((item, idx) => {
-              const inWatchlist = isAlreadyInWatchlist(item.title)
-              return (
-                <div 
-                  key={idx}
-                  className={`group bg-slate-900/60 border border-slate-800/80 ${hoverBorderColor} rounded-2xl overflow-hidden flex flex-col shadow-md hover:shadow-xl transition-all duration-300 relative`}
-                >
-                  {/* Rank Badge */}
-                  <div className={`absolute top-3 left-3 w-8 h-8 rounded-lg ${rankBadgeBg} text-white flex items-center justify-center font-black text-sm shadow-md z-10`}>
-                    {idx + 1}
-                  </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+              {trending.slice(0, visibleCount).map((item, idx) => {
+                const inWatchlist = isAlreadyInWatchlist(item.title)
+                return (
+                  <div 
+                    key={idx}
+                    className={`group bg-slate-900/60 border border-slate-800/80 ${hoverBorderColor} rounded-2xl overflow-hidden flex flex-col shadow-md hover:shadow-xl transition-all duration-300 relative`}
+                  >
+                    {/* Rank Badge */}
+                    <div className={`absolute top-3 left-3 w-8 h-8 rounded-lg ${rankBadgeBg} text-white flex items-center justify-center font-black text-sm shadow-md z-10`}>
+                      {idx + 1}
+                    </div>
 
-                  {/* Poster Image */}
-                  <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0">
-                    {item.poster_url ? (
-                      <img 
-                        src={item.poster_url} 
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                      />
-                    ) : (
+                    {/* Poster Image */}
+                    <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0">
+                      {item.poster_url ? (
+                        <img 
+                          src={item.poster_url} 
+                          alt={item.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                      ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
                         {isGame ? <Gamepad className="w-10 h-10 text-slate-700 mb-2" /> : <Film className="w-10 h-10 text-slate-700 mb-2" />}
                         <span className="text-xs text-slate-500 font-bold uppercase">{item.title}</span>
@@ -216,9 +247,15 @@ export default function TrendingTop100() {
                     </button>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+            {visibleCount < trending.length && (
+              <div ref={sentinelRef} className="flex justify-center py-12 w-full">
+                <Loader2 className={`w-8 h-8 animate-spin ${loaderColor}`} />
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

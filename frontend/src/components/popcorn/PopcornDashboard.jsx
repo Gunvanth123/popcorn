@@ -9,6 +9,7 @@ import {
   Rocket, Bookmark, Gamepad2, Gamepad, Trophy, MessageSquare, Send
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import LazyRow from './LazyRow'
 
 const GENRE_IDS = {
   "Action": 28,
@@ -867,7 +868,8 @@ export default function PopcornDashboard() {
     if (!items || items.length === 0) return null
     const rowId = 'row-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     return (
-      <div className="space-y-4">
+      <LazyRow height="345px">
+        <div className="space-y-4">
         <div className="flex items-center gap-2">
           {icon}
           <h3 className="text-base font-black text-white uppercase tracking-wider">{title}</h3>
@@ -959,6 +961,7 @@ export default function PopcornDashboard() {
           </button>
         </div>
       </div>
+    </LazyRow>
     )
   }
 
@@ -1459,9 +1462,9 @@ export default function PopcornDashboard() {
                         {/* Poster Cover */}
                         <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
                           {entry.poster_data ? (
-                            <img src={entry.poster_data} alt={entry.title} className="w-full h-full object-cover rounded-t-2xl group-hover:scale-[1.03] transition-transform duration-500 animate-in fade-in" />
+                            <img src={entry.poster_data} alt={entry.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl group-hover:scale-[1.03] transition-transform duration-500 animate-in fade-in" />
                           ) : entry.poster_url ? (
-                            <img src={entry.poster_url} alt={entry.title} className="w-full h-full object-cover rounded-t-2xl group-hover:scale-[1.03] transition-transform duration-500 animate-in fade-in" />
+                            <img src={entry.poster_url} alt={entry.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl group-hover:scale-[1.03] transition-transform duration-500 animate-in fade-in" />
                           ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
                               {isGame ? <Gamepad className="w-8 h-8 text-slate-700 mb-2" /> : <Film className="w-8 h-8 text-slate-700 mb-2" />}
@@ -1655,7 +1658,7 @@ export default function PopcornDashboard() {
                               <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                               <div className="aspect-[2/3] bg-slate-900 relative overflow-hidden shrink-0 rounded-t-2xl">
                                 {item.poster_url ? (
-                                  <img src={item.poster_url} alt={item.title} className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500" />
+                                  <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
                                   <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
                                     {isGame ? <Gamepad className="w-8 h-8 text-slate-800 mb-1" /> : <Film className="w-8 h-8 text-slate-800 mb-1" />}
@@ -2386,7 +2389,7 @@ export default function PopcornDashboard() {
                         >
                           <div className="w-10 h-14 bg-slate-900 rounded overflow-hidden shrink-0">
                             {item.poster_url ? (
-                              <img src={item.poster_url} className="w-full h-full object-cover" alt="Search item" />
+                              <img src={item.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Search item" />
                             ) : (
                               isGame ? <Gamepad2 className="w-4 h-4 text-slate-700 m-auto" /> : <Film className="w-4 h-4 text-slate-700 m-auto" />
                             )}
@@ -2820,7 +2823,7 @@ export default function PopcornDashboard() {
                           >
                             <div className="aspect-[2/3] relative bg-slate-900 shrink-0">
                               {rec.poster_url ? (
-                                <img src={rec.poster_url} className="w-full h-full object-cover" alt={rec.title} />
+                                <img src={rec.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={rec.title} />
                               ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[7px] text-slate-600">
                                   {isGame ? <Gamepad className="w-4 h-4 mb-1" /> : <Film className="w-4 h-4 mb-1" />}

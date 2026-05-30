@@ -1,11 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import Login from './components/auth/Login'
-import Register from './components/auth/Register'
-import PopcornDashboard from './components/popcorn/PopcornDashboard'
-import TrendingTop100 from './components/popcorn/TrendingTop100'
-import Settings from './components/settings/Settings'
 import { Toaster } from 'react-hot-toast'
+
+const Login = lazy(() => import('./components/auth/Login'))
+const Register = lazy(() => import('./components/auth/Register'))
+const PopcornDashboard = lazy(() => import('./components/popcorn/PopcornDashboard'))
+const TrendingTop100 = lazy(() => import('./components/popcorn/TrendingTop100'))
+const Settings = lazy(() => import('./components/settings/Settings'))
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -53,17 +55,26 @@ export default function App() {
           }
         }}
       />
-      <Routes>
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-        
-        <Route path="/dashboard" element={<PrivateRoute><PopcornDashboard /></PrivateRoute>} />
-        <Route path="/trending" element={<PrivateRoute><TrendingTop100 /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#0b0f19] text-white">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
+            <p className="text-sm text-slate-400 font-bold tracking-widest animate-pulse uppercase">Loading Popcorn...</p>
+          </div>
+        </div>
+      }>
+        <Routes>
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          
+          <Route path="/dashboard" element={<PrivateRoute><PopcornDashboard /></PrivateRoute>} />
+          <Route path="/trending" element={<PrivateRoute><TrendingTop100 /></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Suspense>
     </AuthProvider>
   )
 }

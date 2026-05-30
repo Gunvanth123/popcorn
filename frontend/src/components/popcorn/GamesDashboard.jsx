@@ -7,6 +7,7 @@ import {
   Monitor, Smartphone, Zap
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import LazyRow from './LazyRow'
 
 /* ─── constants ────────────────────────────────────────────── */
 const GAME_GENRES = [
@@ -414,7 +415,8 @@ export default function GamesDashboard() {
     if (!items?.length) return null
     const rowId = 'grow-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     return (
-      <div className="space-y-4">
+      <LazyRow height="345px">
+        <div className="space-y-4">
         <div className="flex items-center gap-2">
           {icon}
           <h3 className="text-base font-black text-white uppercase tracking-wider">{title}</h3>
@@ -483,6 +485,7 @@ export default function GamesDashboard() {
           </button>
         </div>
       </div>
+    </LazyRow>
     )
   }
 
@@ -607,7 +610,7 @@ export default function GamesDashboard() {
                       className="flex items-center gap-3 p-3 bg-slate-950/60 border border-white/5 hover:border-violet-500/40 rounded-2xl cursor-pointer transition-all group"
                     >
                       {item.poster_url ? (
-                        <img src={item.poster_url} alt={item.title} className="w-10 h-14 object-cover rounded-lg shrink-0" />
+                        <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-10 h-14 object-cover rounded-lg shrink-0" />
                       ) : (
                         <div className="w-10 h-14 bg-slate-800 rounded-lg flex items-center justify-center shrink-0">
                           <Gamepad2 className="w-5 h-5 text-slate-600" />
@@ -717,7 +720,7 @@ export default function GamesDashboard() {
                     <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                     <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
                       {entry.poster_url ? (
-                        <img src={entry.poster_url} alt={entry.title} className="w-full h-full object-cover rounded-t-2xl" />
+                        <img src={entry.poster_url} alt={entry.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center">
                           <Gamepad2 className="w-8 h-8 text-slate-800 mb-1" />
