@@ -105,6 +105,9 @@ img {
   transform: translateZ(0);
   /* Prevent layout recalc from leaking up/down */
   contain: layout style;
+  /* Skip rendering off-screen rows for massive performance boost */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 345px;
 }
 
 /* ============================================================
@@ -140,6 +143,7 @@ img {
 .movie-3d-card:hover {
   will-change: transform;
   contain: layout style; /* relax paint containment so 3D layers can spill */
+  transform: translateY(-8px) scale(1.04);
 }
 
 .movie-3d-card::after {
@@ -160,18 +164,33 @@ img {
   border-color: rgba(249, 115, 22, 0.55);
 }
 
-/* Holographic shine */
+/* Holographic shine sweep */
 .movie-card-shine {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: -150%;
+  width: 150%;
   height: 100%;
   pointer-events: none;
   z-index: 10;
   opacity: 0;
-  transition: opacity 0.25s ease;
-  mix-blend-mode: screen;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.08) 70%,
+    transparent
+  );
+  transform: skewX(-20deg);
+  /* Reset position instantly on exit */
+  transition: opacity 0.25s ease, left 0s 0.25s;
+}
+
+.movie-3d-card:hover .movie-card-shine {
+  opacity: 1;
+  left: 150%;
+  transition: left 0.75s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
 }
 
 .movie-3d-card:hover {

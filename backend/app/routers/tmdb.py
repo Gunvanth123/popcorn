@@ -55,7 +55,7 @@ def parse_tmdb_item(item: dict) -> dict:
         genres = ["Other"]
 
     poster_path = item.get("poster_path")
-    poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+    poster_url = f"https://image.tmdb.org/t/p/w780{poster_path}" if poster_path else None
 
     return {
         "title": title,

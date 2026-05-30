@@ -480,51 +480,7 @@ export default function PopcornDashboard() {
     }
   }
 
-  const handleCardMouseMove = (e) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const xc = rect.width / 2;
-    const yc = rect.height / 2;
-    const dx = x - xc;
-    const dy = y - yc;
 
-    // Tilt calculations (up to 15 degrees)
-    const tiltX = -(dy / yc) * 15;
-    const tiltY = (dx / xc) * 15;
-
-    // Shine calculation
-    const shineX = (x / rect.width) * 100;
-    const shineY = (y / rect.height) * 100;
-
-    card.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(1.04)`;
-
-    const shine = card.querySelector('.movie-card-shine');
-    if (shine) {
-      shine.style.background = `radial-gradient(circle at ${shineX}% ${shineY}%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 65%)`;
-      shine.style.opacity = '1';
-    }
-  };
-
-  const handleCardMouseEnter = (e) => {
-    const card = e.currentTarget;
-    card.style.transition = 'transform 0.1s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease';
-    const shine = card.querySelector('.movie-card-shine');
-    if (shine) {
-      shine.style.opacity = '1';
-    }
-  };
-
-  const handleCardMouseLeave = (e) => {
-    const card = e.currentTarget;
-    card.style.transition = 'transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.55s ease, border-color 0.55s ease';
-    card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
-    const shine = card.querySelector('.movie-card-shine');
-    if (shine) {
-      shine.style.opacity = '0';
-    }
-  };
 
   const handleCardClick = (item) => {
     const existing = entries.find(e => e.title.toLowerCase().trim() === item.title.toLowerCase().trim())
@@ -815,9 +771,6 @@ export default function PopcornDashboard() {
                 >
                   <div
                     className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
-                    onMouseMove={handleCardMouseMove}
-                    onMouseEnter={handleCardMouseEnter}
-                    onMouseLeave={handleCardMouseLeave}
                   >
                     <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                     {showRank && (
@@ -1373,9 +1326,6 @@ export default function PopcornDashboard() {
                     >
                       <div
                         className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative"
-                        onMouseMove={handleCardMouseMove}
-                        onMouseEnter={handleCardMouseEnter}
-                        onMouseLeave={handleCardMouseLeave}
                       >
                         <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                         {/* Poster Cover */}
@@ -1572,9 +1522,6 @@ export default function PopcornDashboard() {
                           <div key={idx} className="movie-3d-card-container">
                             <div
                               className="movie-3d-card bg-slate-955 border border-slate-850 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
-                              onMouseMove={handleCardMouseMove}
-                              onMouseEnter={handleCardMouseEnter}
-                              onMouseLeave={handleCardMouseLeave}
                               onClick={() => handleCardClick(item)}
                             >
                               <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
@@ -1732,9 +1679,6 @@ export default function PopcornDashboard() {
                             >
                               <div
                                 className="movie-3d-card bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
-                                onMouseMove={handleCardMouseMove}
-                                onMouseEnter={handleCardMouseEnter}
-                                onMouseLeave={handleCardMouseLeave}
                               >
                                 <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                                 <div className="aspect-[2/3] bg-slate-900 relative overflow-hidden shrink-0 rounded-t-2xl">

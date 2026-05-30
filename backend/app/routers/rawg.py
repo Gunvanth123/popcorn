@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 import httpx
 import os
+import re
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
@@ -33,6 +34,8 @@ def parse_rawg_item(item: dict) -> dict:
         platforms = ["PC"]
         
     poster_url = item.get("background_image")
+    if poster_url:
+        poster_url = re.sub(r"/media/crop/\d+/\d+/", "/media/", poster_url)
     
     released = item.get("released", "N/A")
     metacritic = item.get("metacritic", "N/A")
