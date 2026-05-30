@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { popcornApi, tmdbApi, gamesApi, rawgApi } from '../../api/client'
+import { popcornApi, tmdbApi, gamesApi, rawgApi, aiApi } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import {
   Plus, Trash2, Edit3, Loader2, Image as ImageIcon, Search,
   Popcorn as PopcornIcon, ExternalLink, ChevronRight, X,
   TrendingUp, Settings, Film, Tv, Star, Globe, Check, ChevronLeft, Sparkles,
-  Rocket, Bookmark, Gamepad2, Gamepad, Trophy
+  Rocket, Bookmark, Gamepad2, Gamepad, Trophy, MessageSquare, Send
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -232,11 +232,139 @@ const PopcornSlider = ({ value, onChange, isGame = false }) => {
   )
 }
 
+const renderMarkdown = (text) => {
+  if (!text) return "";
+  
+  const paragraphs = text.split("\n\n");
+  
+  return paragraphs.map((para, pIdx) => {
+    let html = para;
+    
+    // Bold: **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, 'strong_start$1strong_end');
+    
+    // Italics: *text*
+    html = html.replace(/\*(.*?)\*/g, 'em_start$1em_end');
+    
+    // Bullet list items
+    const isBulletList = para.trim().startsWith('- ') || para.trim().startsWith('* ');
+    if (isBulletList) {
+      const items = para.split(/\n[-*]\s+/);
+      const listItems = items.map((item, iIdx) => {
+        if (iIdx === 0 && item.trim() === '') return null;
+        
+        let cleaned = item.trim();
+        if (cleaned.startsWith('- ') || cleaned.startsWith('* ')) {
+          cleaned = cleaned.substring(2);
+        }
+        
+        cleaned = cleaned.replace(/strong_start/g, '<strong>').replace(/strong_end/g, '</strong>');
+        cleaned = cleaned.replace(/em_start/g, '<em>').replace(/em_end/g, '</em>');
+        
+        return <li key={iIdx} dangerouslySetInnerHTML={{ __html: cleaned }} />;
+      }).filter(Boolean);
+      
+      return <ul key={pIdx} className="list-disc pl-5 my-1.5">{listItems}</ul>;
+    }
+    
+    // Numbered list items
+    const isNumberedList = /^\d+\.\s+/.test(para.trim());
+    if (isNumberedList) {
+      const items = para.split(/\n\d+\.\s+/);
+      const listItems = items.map((item, iIdx) => {
+        if (iIdx === 0 && !/^\d+\.\s+/.test(item)) {
+          const match = item.match(/^\d+\.\s+(.*)/);
+          if (match) item = match[1];
+          else return null;
+        }
+        
+        let cleaned = item.trim();
+        cleaned = cleaned.replace(/strong_start/g, '<strong>').replace(/strong_end/g, '</strong>');
+        cleaned = cleaned.replace(/em_start/g, '<em>').replace(/em_end/g, '</em>');
+        
+        return <li key={iIdx} dangerouslySetInnerHTML={{ __html: cleaned }} />;
+      }).filter(Boolean);
+      
+      return <ol key={pIdx} className="list-decimal pl-5 my-1.5">{listItems}</ol>;
+    }
+    
+    html = html.replace(/strong_start/g, '<strong>').replace(/strong_end/g, '</strong>');
+    html = html.replace(/em_start/g, '<em>').replace(/em_end/g, '</em>');
+    html = html.replace(/\n/g, '<br />');
+    
+    return <p key={pIdx} className="mb-2" dangerouslySetInnerHTML={{ __html: html }} />;
+  });
+};
+
 export default function PopcornDashboard() {
   const { logout, user } = useAuth()
   const navigate = useNavigate()
 
   const [appMode, setAppMode] = useState(() => localStorage.getItem('popcorn_app_mode') || 'popcorn')
+
+  // AI Chatbot State
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatMessages, setChatMessages] = useState([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatMessagesEndRef = useRef(null)
+
+  // Scroll to bottom of chat when messages change or chat is opened
+  useEffect(() => {
+    if (chatOpen) {
+      chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [chatMessages, chatOpen])
+
+  // Initialize or reset chatbot greeting when app mode changes
+  useEffect(() => {
+    const greeting = appMode === 'gamecorn'
+      ? "Hi! I am GameCorn AI, your retro gaming assistant. Ask me for recommendations, search for games, or let me analyze your Playlist/Backlog! 🎮"
+      : "Hi! I am Popcorn AI, your personal watch assistant. Ask me to recommend movies, series, or anime, or discuss your Watchlist! 🍿"
+    setChatMessages([
+      { role: 'assistant', content: greeting, recommendations: [] }
+    ])
+  }, [appMode])
+
+  const handleSendChatMessage = async (e) => {
+    e.preventDefault()
+    if (!chatInput.trim() || chatLoading) return
+
+    const userMessage = { role: 'user', content: chatInput.trim(), recommendations: [] }
+    setChatMessages(prev => [...prev, userMessage])
+    setChatInput('')
+    setChatLoading(true)
+
+    try {
+      const messagesHistory = [...chatMessages, userMessage].slice(1).map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
+
+      if (messagesHistory.length === 0) {
+        messagesHistory.push({ role: 'user', content: userMessage.content })
+      }
+
+      const response = await aiApi.chat({
+        messages: messagesHistory,
+        app_mode: appMode
+      })
+
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: response.message,
+        recommendations: response.recommendations || []
+      }])
+    } catch (err) {
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Oops, I encountered a communication error with the backend. Please check if your FastAPI server is running with the GROQ API key configured!',
+        recommendations: []
+      }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionTarget, setTransitionTarget] = useState('')
 
@@ -2651,6 +2779,130 @@ export default function PopcornDashboard() {
           </div>
         </div>
       )}
+      {/* Floating AI Chatbot Widget */}
+      <div className="chat-widget-container select-none">
+        {chatOpen && (
+          <div className="chat-window-panel">
+            {/* Header */}
+            <div className="chat-window-header">
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${isGame ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]'} animate-pulse`} />
+                <span className="text-xs font-black uppercase text-white tracking-widest">
+                  {isGame ? 'GameCorn AI' : 'Popcorn AI'}
+                </span>
+              </div>
+              <button 
+                onClick={() => setChatOpen(false)}
+                className="p-1 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="chat-messages-area">
+              {chatMessages.map((msg, idx) => (
+                <div 
+                  key={idx} 
+                  className={`chat-message-bubble ${msg.role} ${isGame ? 'gamecorn' : ''}`}
+                >
+                  {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
+                  
+                  {/* Recommendations Cards rendered underneath */}
+                  {msg.role === 'assistant' && msg.recommendations && msg.recommendations.length > 0 && (
+                    <div className="chat-recommendations-list no-scrollbar">
+                      {msg.recommendations.map((rec, recIdx) => {
+                        const inWatchlist = isAlreadyInWatchlist(rec.title)
+                        return (
+                          <div 
+                            key={recIdx}
+                            className="flex-shrink-0 w-[115px] bg-slate-950/80 border border-white/5 rounded-xl overflow-hidden flex flex-col justify-between"
+                          >
+                            <div className="aspect-[2/3] relative bg-slate-900 shrink-0">
+                              {rec.poster_url ? (
+                                <img src={rec.poster_url} className="w-full h-full object-cover" alt={rec.title} />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[7px] text-slate-600">
+                                  {isGame ? <Gamepad className="w-4 h-4 mb-1" /> : <Film className="w-4 h-4 mb-1" />}
+                                  <span className="truncate w-full font-bold">{rec.title}</span>
+                                </div>
+                              )}
+                              <div className="absolute top-1 right-1 px-1 py-0.2 rounded bg-slate-950/80 text-[7px] text-yellow-400 font-black flex items-center gap-0.5">
+                                <Star className="w-2 h-2 fill-yellow-400 text-yellow-400" />
+                                <span>{Number(rec.rating || 0.0).toFixed(1)}</span>
+                              </div>
+                            </div>
+                            <div className="p-1.5 flex-1 flex flex-col justify-between min-h-0">
+                              <h5 
+                                className={`text-[9px] font-black text-slate-200 line-clamp-1 leading-tight cursor-pointer hover:${textPrimaryColor} transition-colors`}
+                                title={rec.title}
+                                onClick={() => handleCardClick(rec)}
+                              >
+                                {rec.title}
+                              </h5>
+                              <button
+                                onClick={() => !inWatchlist && handleAddToWatchlist(rec)}
+                                disabled={inWatchlist}
+                                className={`w-full mt-1.5 py-1 rounded-lg text-[7px] font-black flex items-center justify-center gap-0.5 transition-all ${
+                                  inWatchlist 
+                                    ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                                    : (isGame ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white')
+                                }`}
+                              >
+                                {inWatchlist ? <Check className="w-2 h-2" /> : <Plus className="w-2 h-2" />}
+                                <span>{inWatchlist ? 'Added' : 'Add'}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {chatLoading && (
+                <div className="chat-message-bubble assistant">
+                  <div className="typing-indicator">
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                  </div>
+                </div>
+              )}
+              <div ref={chatMessagesEndRef} />
+            </div>
+
+            {/* Input Bar */}
+            <form onSubmit={handleSendChatMessage} className="chat-input-bar">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder={isGame ? "Ask for games, tips, backlogs..." : "Ask for movies, TV shows, watchlist..."}
+                className={`chat-input-field ${isGame ? 'gamecorn' : ''}`}
+                disabled={chatLoading}
+              />
+              <button 
+                type="submit"
+                disabled={!chatInput.trim() || chatLoading}
+                className={`p-2 rounded-xl text-white transition-all ${!chatInput.trim() || chatLoading ? 'opacity-40 bg-slate-800' : bgPrimaryColor}`}
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Trigger Button */}
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          className={`chat-trigger-btn ${isGame ? 'gamecorn bg-emerald-600 hover:bg-emerald-500' : 'bg-orange-600 hover:bg-orange-500'}`}
+          title="AI Assistant"
+        >
+          {chatOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        </button>
+      </div>
     </div>
   )
 }

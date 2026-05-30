@@ -1,0 +1,24 @@
+{
+  "short_name": "Popcorn",
+  "name": "Popcorn - Watchlist & Game Tracker",
+  "description": "Keep track of all your favorite movies, TV shows, and games in a premium, glassmorphic space.",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "display": "standalone",
+  "orientation": "portrait-primary"
+}

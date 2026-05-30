@@ -110,3 +110,16 @@ class GameEntryOut(GameEntryBase):
         from_attributes = True
 
 
+# --- AI Chatbot Schemas ---
+from typing import List
+
+class ChatMessage(BaseModel):
+    role: str  # 'user', 'assistant', or 'system'
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    app_mode: str = "popcorn"  # 'popcorn' or 'gamecorn'
+
+
+

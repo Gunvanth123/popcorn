@@ -7,6 +7,14 @@
     <meta name="theme-color" content="#0b0f19" />
     <!-- Disable double-tap zoom and 300ms tap delay for instant touch response -->
     <meta name="HandheldFriendly" content="true" />
+    
+    <!-- iOS & PWA Support Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Popcorn" />
+    <link rel="apple-touch-icon" href="/icon-512.png" />
+    <link rel="manifest" href="/manifest.json" />
+
     <title>Popcorn - Premium Movie Tracker</title>
     <!-- Outfit Google Font — preconnect for zero-latency load -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,5 +25,15 @@
   <body class="bg-[#0f172a] text-slate-100 antialiased font-['Outfit',sans-serif]">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Register Service Worker for PWA Offline & Installation Support -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered successfully!', reg.scope))
+            .catch(err => console.error('Service Worker registration failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>

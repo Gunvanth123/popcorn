@@ -58,6 +58,10 @@ export const rawgApi = {
   getDetails: (params) => api.get('/rawg/details', { params }).then(r => r.data),
 }
 
+export const aiApi = {
+  chat: (data) => api.post('/ai/chat', data).then(r => r.data),
+}
+
 export default api
 
 

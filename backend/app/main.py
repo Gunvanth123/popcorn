@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.database.db import engine, Base
-from app.routers import auth, popcorn, tmdb, games, rawg
+from app.routers import auth, popcorn, tmdb, games, rawg, ai
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -50,6 +50,7 @@ app.include_router(popcorn.router)
 app.include_router(tmdb.router)
 app.include_router(games.router)
 app.include_router(rawg.router)
+app.include_router(ai.router)
 
 @app.get("/")
 def root():
