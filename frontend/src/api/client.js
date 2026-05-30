@@ -38,6 +38,8 @@ export const tmdbApi = {
   getTrending: () => api.get('/tmdb/trending').then(r => r.data),
   getRecommendations: () => api.get('/tmdb/recommendations').then(r => r.data),
   discover: (params) => api.get('/tmdb/discover', { params }).then(r => r.data),
+  getSimilar: (title, category) => api.get('/tmdb/similar', { params: { title, category } }).then(r => r.data),
+  getPersonalized: () => api.get('/tmdb/personalized-recommendations').then(r => r.data),
 }
 
 export const gamesApi = {
@@ -50,6 +52,10 @@ export const gamesApi = {
 export const rawgApi = {
   search: (query) => api.get('/rawg/search', { params: { query } }).then(r => r.data),
   getRecommendations: () => api.get('/rawg/recommendations').then(r => r.data),
+  getSimilar: (title) => api.get('/rawg/similar', { params: { title } }).then(r => r.data),
+  getPersonalized: () => api.get('/rawg/personalized-recommendations').then(r => r.data),
+  getTrending: () => api.get('/rawg/trending').then(r => r.data),
+  getDetails: (params) => api.get('/rawg/details', { params }).then(r => r.data),
 }
 
 export default api

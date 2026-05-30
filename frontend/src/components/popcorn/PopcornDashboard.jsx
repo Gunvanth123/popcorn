@@ -237,6 +237,23 @@ export default function PopcornDashboard() {
   const navigate = useNavigate()
 
   const [appMode, setAppMode] = useState(() => localStorage.getItem('popcorn_app_mode') || 'popcorn')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [transitionTarget, setTransitionTarget] = useState('')
+
+  const triggerModeSwitch = (targetMode) => {
+    if (isTransitioning || appMode === targetMode) return
+    setIsTransitioning(true)
+    setTransitionTarget(targetMode)
+
+    setTimeout(() => {
+      setAppMode(targetMode)
+    }, 850)
+
+    setTimeout(() => {
+      setIsTransitioning(false)
+      setTransitionTarget('')
+    }, 1700)
+  }
 
   useEffect(() => {
     localStorage.setItem('popcorn_app_mode', appMode)
@@ -251,11 +268,16 @@ export default function PopcornDashboard() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [editingEntry, setEditingEntry] = useState(null)
+  const [loadingDescription, setLoadingDescription] = useState(false)
 
   // Recommendations & Discover tab state
   const [activeTab, setActiveTab] = useState('discover')
   const [recommendations, setRecommendations] = useState(null)
   const [recLoading, setRecLoading] = useState(false)
+  const [personalizedRecs, setPersonalizedRecs] = useState([])
+  const [personalizedRecsLoading, setPersonalizedRecsLoading] = useState(false)
+  const [similarItems, setSimilarItems] = useState([])
+  const [similarItemsLoading, setSimilarItemsLoading] = useState(false)
 
   const [discoverCategory, setDiscoverCategory] = useState('movie')
   const [discoverGenre, setDiscoverGenre] = useState('All')
@@ -343,7 +365,21 @@ export default function PopcornDashboard() {
   useEffect(() => {
     fetchEntries()
     setRecommendations(null)
+    setPersonalizedRecs([])
+    setSimilarItems([])
   }, [appMode])
+
+  const fetchPersonalizedRecs = async () => {
+    setPersonalizedRecsLoading(true)
+    try {
+      const pData = appMode === 'gamecorn' ? await rawgApi.getPersonalized() : await tmdbApi.getPersonalized()
+      setPersonalizedRecs(pData || [])
+    } catch (err) {
+      console.error('Failed to load personalized recommendations', err)
+    } finally {
+      setPersonalizedRecsLoading(false)
+    }
+  }
 
   const fetchRecommendations = async () => {
     if (recommendations) return
@@ -384,8 +420,9 @@ export default function PopcornDashboard() {
   useEffect(() => {
     if (activeTab === 'discover') {
       fetchRecommendations()
+      fetchPersonalizedRecs()
     }
-  }, [activeTab, recommendations])
+  }, [activeTab, appMode, entries])
 
   useEffect(() => {
     if (activeTab === 'discover' && appMode !== 'gamecorn') {
@@ -499,12 +536,60 @@ export default function PopcornDashboard() {
     setShowViewModal(true)
   }
 
+  const fetchSimilarItems = async (item) => {
+    setSimilarItems([])
+    setSimilarItemsLoading(true)
+    try {
+      const data = isGame
+        ? await rawgApi.getSimilar(item.title)
+        : await tmdbApi.getSimilar(item.title, item.category || 'Movie')
+      setSimilarItems(data || [])
+    } catch (err) {
+      console.error('Failed to load similar items', err)
+    } finally {
+      setSimilarItemsLoading(false)
+    }
+  }
+
   useEffect(() => {
+    const fetchGameDetails = async () => {
+      if (isGame && selectedEntry && (!selectedEntry.synopsis || selectedEntry.synopsis.includes('Released:') || selectedEntry.synopsis.includes('Metacritic Score:')) && !selectedEntry.descriptionFetched) {
+        setLoadingDescription(true)
+        try {
+          const params = {}
+          if (selectedEntry.rawg_id) {
+            params.rawg_id = selectedEntry.rawg_id
+          } else {
+            params.title = selectedEntry.title
+          }
+          const details = await rawgApi.getDetails(params)
+          if (details && details.description) {
+            setSelectedEntry(prev => {
+              if (!prev || prev.title !== selectedEntry.title) return prev
+              return {
+                ...prev,
+                synopsis: details.description,
+                descriptionFetched: true,
+                developers: details.developers,
+                website: details.website
+              }
+            })
+          }
+        } catch (err) {
+          console.error('Failed to fetch game details:', err)
+        } finally {
+          setLoadingDescription(false)
+        }
+      }
+    }
+
     if (selectedEntry) {
       setSeenRating(selectedEntry.my_rating !== undefined && selectedEntry.my_rating !== null ? selectedEntry.my_rating : 3.0)
       setSeenComments(selectedEntry.reasons_for_liking || '')
       setSelectedTags(selectedEntry.tags ? selectedEntry.tags.split(', ') : [])
       setShowSeenForm(false)
+      fetchSimilarItems(selectedEntry)
+      fetchGameDetails()
     }
   }, [selectedEntry])
 
@@ -1051,16 +1136,16 @@ export default function PopcornDashboard() {
 
       {/* Navbar Header */}
       <header className="border-b border-white/5 bg-slate-900/40 backdrop-blur-md sticky top-0 z-20 relative">
-        <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between">
+        <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <BrandIcon className={`w-6 h-6 animate-pulse ${isGame ? 'text-emerald-400' : 'text-orange-500'}`} />
-            <h1 className={`font-black text-xl tracking-tight bg-gradient-to-r ${brandGradient} bg-clip-text text-transparent uppercase`}>{brandName}</h1>
+            <h1 className={`font-black text-xl tracking-tight bg-gradient-to-r ${brandGradient} bg-clip-text text-transparent uppercase hidden sm:block`}>{brandName}</h1>
           </div>
 
           {/* Premium Mode Switch Toggle */}
-          <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5 items-center">
+          <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5 items-center shrink-0">
             <button
-              onClick={() => setAppMode('popcorn')}
+              onClick={() => triggerModeSwitch('popcorn')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${!isGame
                 ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
                 : 'text-slate-400 hover:text-slate-200'
@@ -1070,7 +1155,7 @@ export default function PopcornDashboard() {
               <span className="hidden sm:inline">Popcorn</span>
             </button>
             <button
-              onClick={() => setAppMode('gamecorn')}
+              onClick={() => triggerModeSwitch('gamecorn')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame
                 ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
                 : 'text-slate-400 hover:text-slate-200'
@@ -1081,16 +1166,18 @@ export default function PopcornDashboard() {
             </button>
           </div>
 
-          <div className="flex items-center gap-4">
-            {!isGame && (
-              <Link
-                to="/trending"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-600/10 border border-orange-500/20 text-orange-500 hover:bg-orange-600 hover:text-white transition-all text-xs font-bold shadow-sm"
-              >
-                <TrendingUp className="w-4 h-4" />
-                <span>Trending Top 100</span>
-              </Link>
-            )}
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
+            <Link
+              to="/trending"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold shadow-sm ${
+                isGame
+                  ? 'bg-emerald-600/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-600 hover:text-white'
+                  : 'bg-orange-600/10 border-orange-500/20 text-orange-500 hover:bg-orange-600 hover:text-white'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span className="hidden md:inline">Trending Top 100</span>
+            </Link>
 
             <button
               onClick={() => navigate('/settings')}
@@ -1135,40 +1222,40 @@ export default function PopcornDashboard() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex gap-6 border-b border-white/5 mb-8">
+        <div className="flex gap-4 border-b border-white/5 mb-8 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('discover')}
-            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 ${activeTab === 'discover'
+            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${activeTab === 'discover'
               ? activeBorderClass
               : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
           >
-            <Globe className="w-4 h-4" />
+            <Globe className="w-4 h-4 flex-shrink-0" />
             <span>{isGame ? 'Discover' : 'Discover'}</span>
           </button>
           <button
             onClick={() => setActiveTab('watchlist')}
-            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 ${activeTab === 'watchlist'
+            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${activeTab === 'watchlist'
               ? activeBorderClass
               : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
           >
-            <Bookmark className="w-4 h-4" />
+            <Bookmark className="w-4 h-4 flex-shrink-0" />
             <span>{isGame ? 'My Playlist' : 'My Watchlist'}</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1">
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
               {entries.filter(e => isGame ? !e.is_played : !e.is_seen).length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab('seen')}
-            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 ${activeTab === 'seen'
+            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${activeTab === 'seen'
               ? activeBorderClass
               : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
           >
-            <BrandIcon className="w-4 h-4" />
+            <BrandIcon className="w-4 h-4 flex-shrink-0" />
             <span>{isGame ? 'Played' : 'Seen'}</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1">
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
               {entries.filter(e => isGame ? e.is_played : e.is_seen).length}
             </span>
           </button>
@@ -1713,29 +1800,60 @@ export default function PopcornDashboard() {
             ) : recommendations ? (
               isGame ? (
                 <div className="space-y-12">
-                  {renderRecommendationRow("Trending Games", recommendations.trending_games, <TrendingUp className="w-5 h-5 text-emerald-400" />, true)}
-                  {renderRecommendationRow("Top Role-Playing Games", recommendations.top_rpgs, <Gamepad2 className="w-5 h-5 text-violet-500" />)}
-                  {renderRecommendationRow("Nintendo Switch Hits", recommendations.switch_hits, <Gamepad className="w-5 h-5 text-red-500" />)}
-                  {renderRecommendationRow("Action Hits", recommendations.action_hits, <Gamepad className="w-5 h-5 text-teal-400" />)}
+                  {renderRecommendationRow("Recommended For You 🌟", personalizedRecs, <Sparkles className="w-5 h-5 text-yellow-400" />)}
+                  {renderRecommendationRow("Recently Released Games 🚀", recommendations.recently_released, <Rocket className="w-5 h-5 text-cyan-400" />)}
+                  {renderRecommendationRow("Popular Upcoming Games 🚀", recommendations.upcoming, <Rocket className="w-5 h-5 text-purple-400" />)}
+                  {renderRecommendationRow("Trending Games 🔥", recommendations.trending_games, <TrendingUp className="w-5 h-5 text-emerald-400" />, true)}
+                  {renderRecommendationRow("Top Role-Playing Games 🧙", recommendations.top_rpgs, <Gamepad2 className="w-5 h-5 text-violet-500" />)}
+                  {renderRecommendationRow("Action Hits 💥", recommendations.action_hits, <Gamepad className="w-5 h-5 text-teal-400" />)}
+                  {renderRecommendationRow("Indie Gems 💡", recommendations.indie_hits, <Sparkles className="w-5 h-5 text-pink-400" />)}
+                  {renderRecommendationRow("Strategy Masters 🧠", recommendations.strategy_hits, <Trophy className="w-5 h-5 text-amber-400" />)}
+                  {renderRecommendationRow("Shooter Games 🎯", recommendations.shooter_hits, <Gamepad className="w-5 h-5 text-red-400" />)}
+                  {renderRecommendationRow("Puzzle & Brain Games 🧩", recommendations.puzzle_hits, <Sparkles className="w-5 h-5 text-blue-400" />)}
+                  {renderRecommendationRow("Simulation Games 🌍", recommendations.simulation_hits, <Globe className="w-5 h-5 text-emerald-400" />)}
+                  {renderRecommendationRow("Adventure Games 🗺️", recommendations.adventure_hits, <Rocket className="w-5 h-5 text-orange-400" />)}
+                  {renderRecommendationRow("Sports Games ⚽", recommendations.sports_hits, <Trophy className="w-5 h-5 text-green-400" />)}
+                  {renderRecommendationRow("Horror Games 👻", recommendations.horror_hits, <Gamepad className="w-5 h-5 text-slate-400" />)}
+                  {renderRecommendationRow("Fighting Games 🥊", recommendations.fighting_hits, <Gamepad2 className="w-5 h-5 text-rose-400" />)}
+                  {renderRecommendationRow("Nintendo Switch Hits 🕹️", recommendations.switch_hits, <Gamepad className="w-5 h-5 text-red-500" />)}
+                  {renderRecommendationRow("Top PC Games 💻", recommendations.top_pc, <Gamepad2 className="w-5 h-5 text-sky-400" />)}
+                  {renderRecommendationRow("Top PS5 Games 🎮", recommendations.top_ps5, <Gamepad2 className="w-5 h-5 text-blue-500" />)}
+                  {renderRecommendationRow("Top Xbox Games 🟢", recommendations.top_xbox, <Gamepad className="w-5 h-5 text-green-500" />)}
                 </div>
               ) : (
                 <div className="space-y-12">
-                  {renderRecommendationRow("Trending Top 10 in the World", recommendations.trending_top_10, <TrendingUp className="w-5 h-5 text-orange-500" />, true)}
-                  {renderRecommendationRow("Top Rated Movies of All Time", recommendations.top_rated, <Star className="w-5 h-5 text-yellow-500" />)}
-                  {renderRecommendationRow("Top Web Series", recommendations.web_series, <Tv className="w-5 h-5 text-purple-500" />)}
-                  {renderRecommendationRow("Top Anime Movies", recommendations.anime_movies, <Film className="w-5 h-5 text-teal-500" />)}
-                  {renderRecommendationRow("Top Anime Series", recommendations.anime_series, <Tv className="w-5 h-5 text-cyan-500" />)}
+                  {renderRecommendationRow("Recommended For You 🌟", personalizedRecs, <Sparkles className="w-5 h-5 text-yellow-400" />)}
+                  {renderRecommendationRow("Recently Released Movies 🚀", recommendations.recently_released, <Rocket className="w-5 h-5 text-cyan-400" />)}
+                  {renderRecommendationRow("Popular Upcoming Movies & Shows 🚀", recommendations.upcoming, <Rocket className="w-5 h-5 text-purple-400" />)}
+                  {renderRecommendationRow("Trending Top 50 in the World 🔥", recommendations.trending_top_10, <TrendingUp className="w-5 h-5 text-orange-500" />, true)}
+                  {renderRecommendationRow("Top Rated Movies of All Time ⭐", recommendations.top_rated, <Star className="w-5 h-5 text-yellow-500" />)}
+                  {renderRecommendationRow("Top Web Series 📺", recommendations.web_series, <Tv className="w-5 h-5 text-purple-500" />)}
+                  {renderRecommendationRow("Popular Series Now 🍿", recommendations.popular_series, <Tv className="w-5 h-5 text-indigo-400" />)}
+                  {renderRecommendationRow("Top Classics 🏆", recommendations.top_classics, <Trophy className="w-5 h-5 text-amber-400" />)}
+                  {renderRecommendationRow("Top Anime Movies 🌸", recommendations.anime_movies, <Film className="w-5 h-5 text-teal-500" />)}
+                  {renderRecommendationRow("Top Anime Series 🌸", recommendations.anime_series, <Tv className="w-5 h-5 text-cyan-500" />)}
 
-                  {/* Curated Languages */}
-                  {renderRecommendationRow("Telugu Hits", recommendations.telugu, <Globe className="w-5 h-5 text-emerald-500" />)}
-                  {renderRecommendationRow("Hindi Hits", recommendations.hindi, <Globe className="w-5 h-5 text-emerald-500" />)}
-                  {renderRecommendationRow("English Hits", recommendations.english, <Globe className="w-5 h-5 text-emerald-500" />)}
-                  {renderRecommendationRow("Tamil Hits", recommendations.tamil, <Globe className="w-5 h-5 text-emerald-500" />)}
-                  {renderRecommendationRow("Kannada Hits", recommendations.kannada, <Globe className="w-5 h-5 text-emerald-500" />)}
+                  {/* Genre Rows */}
+                  {renderRecommendationRow("Top Action Movies 💥", recommendations.action, <Film className="w-5 h-5 text-red-500" />)}
+                  {renderRecommendationRow("Top Thriller Movies 🔪", recommendations.thriller, <Film className="w-5 h-5 text-slate-400" />)}
+                  {renderRecommendationRow("Top Horror Movies 👻", recommendations.horror, <Film className="w-5 h-5 text-zinc-400" />)}
+                  {renderRecommendationRow("Top Sci-Fi Movies 🚀", recommendations.sci_fi, <Rocket className="w-5 h-5 text-sky-400" />)}
+                  {renderRecommendationRow("Top Comedy Movies 😂", recommendations.comedy, <Film className="w-5 h-5 text-blue-500" />)}
+                  {renderRecommendationRow("Top Drama Movies 🎭", recommendations.drama, <Film className="w-5 h-5 text-violet-400" />)}
+                  {renderRecommendationRow("Top Romance Movies 💕", recommendations.romance, <Film className="w-5 h-5 text-pink-400" />)}
+                  {renderRecommendationRow("Top Adventure Movies 🗺️", recommendations.adventure, <Rocket className="w-5 h-5 text-orange-400" />)}
+                  {renderRecommendationRow("Top Fantasy Movies ✨", recommendations.fantasy, <Sparkles className="w-5 h-5 text-purple-400" />)}
+                  {renderRecommendationRow("Top Documentaries 🎬", recommendations.documentary, <Film className="w-5 h-5 text-emerald-400" />)}
 
-                  {/* Curated Genres */}
-                  {renderRecommendationRow("Top Comedy Movies", recommendations.comedy, <Film className="w-5 h-5 text-blue-500" />)}
-                  {renderRecommendationRow("Top Action Movies", recommendations.action, <Film className="w-5 h-5 text-red-500" />)}
+                  {/* Language Rows */}
+                  {renderRecommendationRow("Telugu Hits 🎬", recommendations.telugu, <Globe className="w-5 h-5 text-emerald-500" />)}
+                  {renderRecommendationRow("Hindi Hits 🎬", recommendations.hindi, <Globe className="w-5 h-5 text-orange-400" />)}
+                  {renderRecommendationRow("English Hits 🎬", recommendations.english, <Globe className="w-5 h-5 text-blue-400" />)}
+                  {renderRecommendationRow("Tamil Hits 🎬", recommendations.tamil, <Globe className="w-5 h-5 text-red-400" />)}
+                  {renderRecommendationRow("Kannada Hits 🎬", recommendations.kannada, <Globe className="w-5 h-5 text-yellow-400" />)}
+                  {renderRecommendationRow("Korean Hits 🇰🇷", recommendations.korean, <Globe className="w-5 h-5 text-pink-400" />)}
+                  {renderRecommendationRow("French Hits 🇫🇷", recommendations.french, <Globe className="w-5 h-5 text-indigo-400" />)}
+                  {renderRecommendationRow("Spanish Hits 🇪🇸", recommendations.spanish, <Globe className="w-5 h-5 text-amber-400" />)}
                 </div>
               )
             ) : (
@@ -1755,10 +1873,10 @@ export default function PopcornDashboard() {
         return (
           <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowViewModal(false)} />
-            <div className="relative bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95 duration-200">
+            <div className="relative bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95 duration-200">
 
               {/* Left Poster */}
-              <div className="w-full md:w-2/5 h-64 md:h-auto bg-slate-950 relative shrink-0 overflow-hidden">
+              <div className="w-full md:w-2/5 h-48 md:h-auto bg-slate-950 relative shrink-0 overflow-hidden">
                 {selectedEntry.poster_data ? (
                   <img src={selectedEntry.poster_data} className="w-full h-full object-cover" alt={selectedEntry.title} />
                 ) : selectedEntry.poster_url ? (
@@ -1818,6 +1936,21 @@ export default function PopcornDashboard() {
                         : (selectedEntry.created_at ? (isGame ? "In Playlist" : "In Watchlist") : "Not Tracked")}
                     </p>
                   </div>
+                  {isGame && selectedEntry.developers && (
+                    <div className="col-span-2 border-t border-white/5 pt-2">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Developers</p>
+                      <p className="text-xs font-semibold text-emerald-450 mt-0.5">{selectedEntry.developers}</p>
+                    </div>
+                  )}
+                  {isGame && selectedEntry.website && (
+                    <div className="col-span-2 border-t border-white/5 pt-2">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Official Website</p>
+                      <a href={selectedEntry.website} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1 mt-0.5">
+                        <span>{selectedEntry.website}</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {selectedEntry.genres && (
@@ -1835,9 +1968,16 @@ export default function PopcornDashboard() {
 
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Synopsis</p>
-                  <p className="text-slate-300 text-sm leading-relaxed italic">
-                    "{selectedEntry.synopsis || 'No synopsis provided.'}"
-                  </p>
+                  {loadingDescription ? (
+                    <div className="flex items-center gap-2 py-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                      <span className="text-xs text-slate-500">Fetching game description...</span>
+                    </div>
+                  ) : (
+                    <p className="text-slate-300 text-sm leading-relaxed italic">
+                      "{selectedEntry.synopsis || 'No synopsis provided.'}"
+                    </p>
+                  )}
                 </div>
 
                 {entryPlayed && (
@@ -2077,11 +2217,52 @@ export default function PopcornDashboard() {
                     </div>
                   )}
                 </div>
+
+                {/* Similar Items Row */}
+                <div className="space-y-4 pt-6 border-t border-white/5">
+                  <h4 className={`text-xs font-black uppercase tracking-wider ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>
+                    {isGame ? 'Similar Games You May Like' : 'Similar Movies & Shows'}
+                  </h4>
+                  {similarItemsLoading ? (
+                    <div className="flex items-center gap-3 py-6 justify-center">
+                      <Loader2 className={`w-5 h-5 animate-spin ${isGame ? 'text-emerald-400' : 'text-orange-500'}`} />
+                      <span className="text-xs text-slate-500">Finding similar titles...</span>
+                    </div>
+                  ) : similarItems.length > 0 ? (
+                    <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
+                      {similarItems.map((item, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => handleCardClick(item)}
+                          className="w-[110px] min-w-[110px] bg-slate-955 border border-slate-850 rounded-xl p-2 cursor-pointer hover:border-slate-750 transition-all shrink-0 group/similar"
+                        >
+                          <div className="aspect-[2/3] bg-slate-900 rounded-lg overflow-hidden relative mb-2">
+                            {item.poster_url ? (
+                              <img src={item.poster_url} className="w-full h-full object-cover group-hover/similar:scale-105 transition-transform duration-300" alt={item.title} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                {isGame ? <Gamepad className="w-5 h-5 text-slate-700" /> : <Film className="w-5 h-5 text-slate-700" />}
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-[10px] font-bold text-slate-200 line-clamp-1 leading-tight group-hover/similar:text-white" title={item.title}>
+                            {item.title}
+                          </p>
+                          <p className="text-[8px] text-slate-500 mt-0.5 truncate">
+                            {isGame ? (item.platform?.split(', ')[0] || 'PC') : (item.category || 'Movie')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-500 text-[10px] italic py-2">No similar recommendations found.</p>
+                  )}
+                </div>
               </div>
-            </div>
           </div>
-        )
-      })()}
+        </div>
+      )
+    })()}
 
       {/* ADD / EDIT MODAL */}
       {showModal && (
@@ -2155,7 +2336,7 @@ export default function PopcornDashboard() {
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Poster Art</label>
 
                   {/* Poster Image preview box */}
-                  <div className="aspect-[2/3] bg-slate-950 border-2 border-dashed border-slate-800 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-4 relative group">
+                  <div className="aspect-[2/3] w-40 md:w-full mx-auto bg-slate-950 border-2 border-dashed border-slate-800 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-4 relative group">
                     {formData.poster_data ? (
                       <>
                         <img src={formData.poster_data} alt="Upload preview" className="w-full h-full object-cover" />
@@ -2444,6 +2625,83 @@ export default function PopcornDashboard() {
             <div className="absolute bottom-4 text-white text-xs font-black uppercase tracking-widest animate-pulse">
               {isGame ? 'Achievement Unlocked!' : 'Popcorn Saved!'}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Mode Transition Overlay */}
+      {isTransitioning && (
+        <div className={`screen-transition-overlay to-${transitionTarget}`}>
+          {transitionTarget === 'gamecorn' && <div className="crt-scanlines crt-flicker" />}
+          
+          <div className="relative w-72 h-72 flex flex-col items-center justify-center">
+            
+            {/* Popcorn transition: Pop exploding kernels */}
+            {transitionTarget === 'popcorn' && (
+              <>
+                {Array.from({ length: 20 }).map((_, i) => {
+                  const angle = Math.random() * 360;
+                  const rad = (angle * Math.PI) / 180;
+                  const dist = 140 + Math.random() * 165;
+                  const tx = `${Math.cos(rad) * dist}px`;
+                  const ty = `${Math.sin(rad) * dist}px`;
+                  const rot = `${Math.random() * 360}deg`;
+                  const delay = `${Math.random() * 0.5}s`;
+                  return (
+                    <div
+                      key={i}
+                      className="transition-popcorn-kernel"
+                      style={{
+                        '--tx': tx,
+                        '--ty': ty,
+                        '--rot': rot,
+                        animationDelay: delay
+                      }}
+                    />
+                  );
+                })}
+                
+                <div className="transition-bucket flex flex-col items-center z-20">
+                  <div className="w-28 h-28 bg-gradient-to-b from-red-600 to-red-800 rounded-2xl flex items-center justify-center border-4 border-yellow-400 shadow-[0_0_30px_rgba(239,68,68,0.6)]">
+                    <PopcornIcon className="w-16 h-16 text-yellow-300 fill-yellow-200 animate-pulse" />
+                  </div>
+                  
+                  <div className="mt-8 flex flex-col items-center gap-1.5 text-center">
+                    <span className="text-white text-lg font-black tracking-widest uppercase animate-pulse drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+                      CINEMA SHOWTIME
+                    </span>
+                    <span className="text-[10px] text-red-400 font-bold uppercase tracking-widest animate-pulse delay-75">
+                      Preparing Film Reels...
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* GameCorn transition: Boot screen & Retro Gamepad */}
+            {transitionTarget === 'gamecorn' && (
+              <div className="flex flex-col items-center z-20">
+                <div className="transition-gamepad w-28 h-28 rounded-full border-4 border-emerald-500/80 bg-slate-950/90 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]">
+                  <Gamepad className="w-16 h-16 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                </div>
+                
+                <div className="mt-8 flex flex-col items-start font-mono gap-1 text-emerald-450 bg-black/60 p-4 border border-emerald-500/20 rounded-xl min-w-[240px] text-xs">
+                  <div className="terminal-line terminal-line-1 flex items-center gap-1.5">
+                    <span className="text-cyan-400">&gt;</span> SYSTEM BOOT...
+                  </div>
+                  <div className="terminal-line terminal-line-2 flex items-center gap-1.5">
+                    <span className="text-cyan-400">&gt;</span> CORE.GAMECORN_v1.08...
+                  </div>
+                  <div className="terminal-line terminal-line-3 flex items-center gap-1.5">
+                    <span className="text-cyan-400">&gt;</span> API_GRID: CONNECTED
+                  </div>
+                  <div className="terminal-line terminal-line-4 flex items-center gap-1.5 text-yellow-400 animate-pulse mt-1">
+                    <span className="text-cyan-400">&gt;</span> READY! INSERT COIN
+                  </div>
+                </div>
+              </div>
+            )}
+            
           </div>
         </div>
       )}

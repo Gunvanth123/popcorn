@@ -15,12 +15,34 @@ def get_game_entries(current_user: User = Depends(get_current_user), db: Session
 
 @router.post("/", response_model=schemas.GameEntryOut, status_code=status.HTTP_201_CREATED)
 def create_game_entry(entry: schemas.GameEntryCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    synopsis = entry.synopsis
+    # If the synopsis is empty or uses the old placeholder format, fetch the real game description
+    if not synopsis or "Released:" in synopsis or "Metacritic Score:" in synopsis:
+        import httpx
+        import os
+        api_key = os.getenv("RAWG_API_KEY") or "e5b72dfeb6b349d4948a31e847c2b3e4"
+        try:
+            # Search game by title
+            search_res = httpx.get("https://api.rawg.io/api/games", params={"key": api_key, "search": entry.title, "page_size": 1}, timeout=5.0)
+            if search_res.status_code == 200:
+                results = search_res.json().get("results", [])
+                if results:
+                    game_id = results[0]["id"]
+                    # Fetch detailed info
+                    details_res = httpx.get(f"https://api.rawg.io/api/games/{game_id}", params={"key": api_key}, timeout=5.0)
+                    if details_res.status_code == 200:
+                        desc = details_res.json().get("description_raw") or details_res.json().get("description")
+                        if desc:
+                            synopsis = desc
+        except Exception as e:
+            print(f"Error auto-enriching game description on creation: {e}")
+
     new_entry = GameEntry(
         user_id=current_user.id,
         title=entry.title,
         platform=entry.platform,
         rating=entry.rating,
-        synopsis=entry.synopsis,
+        synopsis=synopsis,
         reasons_for_liking=entry.reasons_for_liking,
         genres=entry.genres,
         poster_url=entry.poster_url,
