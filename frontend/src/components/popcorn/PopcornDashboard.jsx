@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { popcornApi, tmdbApi, gamesApi, rawgApi, aiApi } from '../../api/client'
+import { popcornApi, tmdbApi, gamesApi, rawgApi, aiApi, groupsApi } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import {
   Plus, Trash2, Edit3, Loader2, Image as ImageIcon, Search,
@@ -422,6 +422,13 @@ export default function PopcornDashboard() {
   const [showPoppingLoader, setShowPoppingLoader] = useState(false)
   const [showSaveCelebration, setShowSaveCelebration] = useState(false)
 
+  // Custom Groups State
+  const [groups, setGroups] = useState([])
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState('All')
+  const [showGroupsModal, setShowGroupsModal] = useState(false)
+  const [newGroupName, setNewGroupName] = useState('')
+  const [isSavingGroup, setIsSavingGroup] = useState(false)
+
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -491,8 +498,19 @@ export default function PopcornDashboard() {
     }
   }
 
+  const fetchGroups = async () => {
+    try {
+      const data = await groupsApi.getAll(appMode)
+      setGroups(data)
+    } catch (err) {
+      console.error('Failed to load custom groups:', err)
+    }
+  }
+
   useEffect(() => {
     fetchEntries()
+    fetchGroups()
+    setSelectedGroupFilter('All')
     setRecommendations(null)
     setPersonalizedRecs([])
     setSimilarItems([])
@@ -677,6 +695,163 @@ export default function PopcornDashboard() {
       fetchGameDetails()
     }
   }, [selectedEntry])
+
+  const handleUpdateStatus = async (statusType) => {
+    try {
+      let payload = {
+        title: selectedEntry.title,
+        category: selectedEntry.category || 'Movie',
+        language: selectedEntry.language || 'English',
+        rating: selectedEntry.rating,
+        synopsis: selectedEntry.synopsis,
+        genres: selectedEntry.genres,
+        poster_url: selectedEntry.poster_url,
+        poster_data: selectedEntry.poster_data,
+        reasons_for_liking: selectedEntry.reasons_for_liking || '',
+        my_rating: selectedEntry.my_rating,
+        tags: selectedEntry.tags
+      }
+
+      if (isGame) {
+        payload.platform = selectedEntry.platform || 'PC'
+        if (statusType === 'watchlist') {
+          payload.is_played = false
+          payload.is_playing = false
+        } else if (statusType === 'watching') {
+          payload.is_played = false
+          payload.is_playing = true
+        } else if (statusType === 'seen') {
+          payload.is_played = true
+          payload.is_playing = false
+          setShowSeenForm(true)
+          return
+        }
+      } else {
+        if (statusType === 'watchlist') {
+          payload.is_seen = false
+          payload.is_watching = false
+        } else if (statusType === 'watching') {
+          payload.is_seen = false
+          payload.is_watching = true
+        } else if (statusType === 'seen') {
+          payload.is_seen = true
+          payload.is_watching = false
+          setShowSeenForm(true)
+          return
+        }
+      }
+
+      let res
+      if (selectedEntry.id) {
+        res = isGame
+          ? await gamesApi.update(selectedEntry.id, payload)
+          : await popcornApi.update(selectedEntry.id, payload)
+      } else {
+        res = isGame
+          ? await gamesApi.create(payload)
+          : await popcornApi.create(payload)
+      }
+
+      setEntries(prev => {
+        const exists = prev.some(e => e.id === res.id)
+        if (exists) {
+          return prev.map(e => e.id === res.id ? res : e)
+        } else {
+          return [res, ...prev]
+        }
+      })
+      setSelectedEntry(res)
+      toast.success('Status updated successfully!')
+    } catch (err) {
+      toast.error('Failed to update status')
+    }
+  }
+
+  const handleToggleGroup = async (group) => {
+    if (!selectedEntry.id) {
+      // First save to library and then associate group
+      try {
+        const payload = isGame ? {
+          title: selectedEntry.title,
+          platform: selectedEntry.platform || 'PC',
+          rating: selectedEntry.rating,
+          synopsis: selectedEntry.synopsis,
+          genres: selectedEntry.genres,
+          poster_url: selectedEntry.poster_url,
+          is_played: false,
+          group_ids: [group.id]
+        } : {
+          title: selectedEntry.title,
+          category: selectedEntry.category || 'Movie',
+          language: selectedEntry.language || 'English',
+          rating: selectedEntry.rating,
+          synopsis: selectedEntry.synopsis,
+          genres: selectedEntry.genres,
+          poster_url: selectedEntry.poster_url,
+          is_seen: false,
+          group_ids: [group.id]
+        }
+
+        const res = isGame ? await gamesApi.create(payload) : await popcornApi.create(payload)
+        setEntries(prev => [res, ...prev])
+        setSelectedEntry(res)
+        toast.success(`Saved and added to "${group.name}"!`)
+      } catch (err) {
+        toast.error('Failed to save and add to group')
+      }
+      return
+    }
+
+    // Toggle association
+    const currentGroupIds = selectedEntry.custom_groups ? selectedEntry.custom_groups.map(g => g.id) : []
+    const isMember = currentGroupIds.includes(group.id)
+    const newGroupIds = isMember 
+      ? currentGroupIds.filter(id => id !== group.id)
+      : [...currentGroupIds, group.id]
+
+    try {
+      const payload = isGame ? {
+        title: selectedEntry.title,
+        platform: selectedEntry.platform,
+        rating: selectedEntry.rating,
+        synopsis: selectedEntry.synopsis,
+        reasons_for_liking: selectedEntry.reasons_for_liking || '',
+        genres: selectedEntry.genres,
+        poster_url: selectedEntry.poster_url,
+        poster_data: selectedEntry.poster_data,
+        my_rating: selectedEntry.my_rating,
+        is_played: selectedEntry.is_played,
+        is_playing: selectedEntry.is_playing,
+        tags: selectedEntry.tags,
+        group_ids: newGroupIds
+      } : {
+        title: selectedEntry.title,
+        category: selectedEntry.category,
+        language: selectedEntry.language,
+        rating: selectedEntry.rating,
+        synopsis: selectedEntry.synopsis,
+        reasons_for_liking: selectedEntry.reasons_for_liking || '',
+        genres: selectedEntry.genres,
+        poster_url: selectedEntry.poster_url,
+        poster_data: selectedEntry.poster_data,
+        my_rating: selectedEntry.my_rating,
+        is_seen: selectedEntry.is_seen,
+        is_watching: selectedEntry.is_watching,
+        tags: selectedEntry.tags,
+        group_ids: newGroupIds
+      }
+
+      const res = isGame 
+        ? await gamesApi.update(selectedEntry.id, payload)
+        : await popcornApi.update(selectedEntry.id, payload)
+
+      setEntries(prev => prev.map(e => e.id === selectedEntry.id ? res : e))
+      setSelectedEntry(res)
+      toast.success(isMember ? `Removed from "${group.name}"` : `Added to "${group.name}"`)
+    } catch (err) {
+      toast.error('Failed to update group associations')
+    }
+  }
 
   const handleSaveSeen = async () => {
     try {
@@ -1180,12 +1355,26 @@ export default function PopcornDashboard() {
   // Frontend filter logic
   const filteredEntries = entries.filter(e => {
     const isSeenOrPlayed = appMode === 'gamecorn' ? e.is_played : e.is_seen
-    const matchesTab = activeTab === 'watchlist' ? !isSeenOrPlayed : (activeTab === 'seen' ? isSeenOrPlayed : true)
+    const isWatchingOrPlaying = appMode === 'gamecorn' ? e.is_playing : e.is_watching
+    
+    let matchesTab = false
+    if (activeTab === 'watchlist') {
+      matchesTab = !isSeenOrPlayed && !isWatchingOrPlaying
+    } else if (activeTab === 'watching') {
+      matchesTab = isWatchingOrPlaying
+    } else if (activeTab === 'seen') {
+      matchesTab = isSeenOrPlayed
+    } else {
+      matchesTab = true
+    }
+
     const matchesCategory = filterCategory === 'All' || (appMode === 'gamecorn' ? e.platform === filterCategory : e.category === filterCategory)
     const matchesGenre = filterGenre === 'All' || (e.genres && e.genres.split(', ').includes(filterGenre))
     const matchesLanguage = appMode === 'gamecorn' ? true : (filterLanguage === 'All' || e.language === filterLanguage)
     const matchesSearch = dashboardSearch.trim() === '' || e.title.toLowerCase().includes(dashboardSearch.toLowerCase())
-    return matchesTab && matchesCategory && matchesGenre && matchesLanguage && matchesSearch
+    const matchesGroup = selectedGroupFilter === 'All' || (e.custom_groups && e.custom_groups.some(g => g.id === parseInt(selectedGroupFilter)))
+
+    return matchesTab && matchesCategory && matchesGenre && matchesLanguage && matchesSearch && matchesGroup
   })
 
   // Pagination Logic
@@ -1328,7 +1517,20 @@ export default function PopcornDashboard() {
             <Bookmark className="w-4 h-4 flex-shrink-0" />
             <span>{isGame ? 'My Playlist' : 'My Watchlist'}</span>
             <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
-              {entries.filter(e => isGame ? !e.is_played : !e.is_seen).length}
+              {entries.filter(e => isGame ? (!e.is_played && !e.is_playing) : (!e.is_seen && !e.is_watching)).length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('watching')}
+            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${activeTab === 'watching'
+              ? activeBorderClass
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+          >
+            {isGame ? <Gamepad className="w-4 h-4 flex-shrink-0" /> : <Tv className="w-4 h-4 flex-shrink-0" />}
+            <span>{isGame ? 'Currently Playing' : 'Currently Watching'}</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
+              {entries.filter(e => isGame ? e.is_playing : e.is_watching).length}
             </span>
           </button>
           <button
@@ -1346,7 +1548,7 @@ export default function PopcornDashboard() {
           </button>
         </div>
 
-        {activeTab === 'watchlist' || activeTab === 'seen' ? (
+        {['watchlist', 'watching', 'seen'].includes(activeTab) ? (
           <>
             {/* Filters Panel */}
             <div className="flex flex-col gap-4 mb-8 bg-slate-900/40 border border-slate-800/80 p-5 rounded-3xl backdrop-blur-md">
@@ -1371,7 +1573,7 @@ export default function PopcornDashboard() {
               </div>
 
               {/* Select Dropdown Filters */}
-              <div className={`grid grid-cols-1 ${isGame ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4`}>
+              <div className={`grid grid-cols-1 ${isGame ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-4`}>
                 {/* Category/Platform Filter */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -1418,6 +1620,29 @@ export default function PopcornDashboard() {
                     </select>
                   </div>
                 )}
+
+                {/* Group Filter */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Custom Group</label>
+                    <button
+                      onClick={() => setShowGroupsModal(true)}
+                      className={`text-[9px] font-black uppercase tracking-wider ${isGame ? 'text-emerald-400 hover:text-emerald-300' : 'text-orange-500 hover:text-orange-400'} transition-colors`}
+                    >
+                      Manage
+                    </button>
+                  </div>
+                  <select
+                    value={selectedGroupFilter}
+                    onChange={(e) => setSelectedGroupFilter(e.target.value)}
+                    className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                  >
+                    <option value="All">All Groups</option>
+                    {groups.map(g => (
+                      <option key={g.id} value={g.id.toString()}>{g.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -1431,11 +1656,13 @@ export default function PopcornDashboard() {
               <div className="text-center py-24 bg-slate-900/30 rounded-3xl border border-dashed border-slate-800 p-8">
                 <BrandIcon className="w-12 h-12 mx-auto text-slate-700 opacity-40 mb-4" />
                 <h3 className="text-lg font-bold text-slate-300">
-                  Your {activeTab === 'watchlist' ? (isGame ? 'Playlist' : 'Watchlist') : (isGame ? 'Played Vault' : 'Seen Vault')} is empty
+                  Your {activeTab === 'watchlist' ? (isGame ? 'Playlist' : 'Watchlist') : activeTab === 'watching' ? (isGame ? 'Currently Playing' : 'Currently Watching') : (isGame ? 'Played Vault' : 'Seen Vault')} is empty
                 </h3>
                 <p className="text-slate-500 text-xs mt-1.5 max-w-xs mx-auto mb-4">
                   {activeTab === 'watchlist'
                     ? (isGame ? 'Start building your collection by adding games manually or checking recommendations!' : 'Start building your collection by adding movies manually or checking recommendations!')
+                    : activeTab === 'watching'
+                    ? (isGame ? "You aren't playing any games currently. Mark backlog items as Currently Playing!" : "You aren't watching anything currently. Mark watchlist items as Currently Watching!")
                     : (isGame ? 'Track your played games by marking Playlist items as Played!' : 'Track your watched movies by marking watchlist items as Seen!')}
                 </p>
                 <button
@@ -2234,63 +2461,102 @@ export default function PopcornDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        {selectedEntry.id ? (
-                          <>
-                            <button
-                              onClick={() => setShowSeenForm(true)}
-                              className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl border text-xs font-bold transition-all ${isGame ? 'bg-emerald-600/10 border-emerald-500/20 hover:bg-emerald-600/20 text-emerald-500' : 'bg-orange-600/10 border-orange-500/20 hover:bg-orange-600/20 text-orange-500'}`}
-                            >
-                              {isGame ? <Gamepad className="w-4 h-4" /> : <PopcornIcon className="w-4 h-4" />}
-                              <span>{entryPlayed ? 'Edit Review' : (isGame ? 'Mark as Played' : 'Mark as Seen')}</span>
-                            </button>
-                            {entryPlayed && (
-                              <button
-                                onClick={handleUnmarkSeen}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold transition-all text-slate-300"
-                                title={isGame ? "Unmark as Played" : "Unmark as Seen"}
-                              >
-                                <Bookmark className={`w-4 h-4 ${isGame ? 'text-emerald-500' : 'text-orange-500'}`} />
-                                <span>{isGame ? 'Move to Playlist' : 'Move to Watchlist'}</span>
-                              </button>
-                            )}
-                            <button
-                              onClick={() => { handleEditClick(selectedEntry); setShowViewModal(false); }}
-                              className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold transition-all text-slate-300"
-                              title="Edit details"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(selectedEntry.id)}
-                              className="py-3 px-4 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white text-xs font-bold transition-all"
-                              title="Remove"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => setShowSeenForm(true)}
-                              className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl border text-xs font-bold transition-all ${isGame ? 'bg-emerald-600/10 border-emerald-500/20 hover:bg-emerald-600/20 text-emerald-500' : 'bg-orange-600/10 border-orange-500/20 hover:bg-orange-600/20 text-orange-500'}`}
-                            >
-                              {isGame ? <Gamepad className="w-4 h-4" /> : <PopcornIcon className="w-4 h-4" />}
-                              <span>{isGame ? 'Mark as Played' : 'Mark as Seen'}</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                handleAddToWatchlist(selectedEntry);
-                                setShowViewModal(false);
-                              }}
-                              className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-white text-xs font-bold transition-all shadow-lg ${isGame ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/15' : 'bg-orange-600 hover:bg-orange-500 shadow-orange-600/15'}`}
-                            >
-                              <Plus className="w-4 h-4" />
-                              <span>{isGame ? 'Add to Playlist' : 'Add to Watchlist'}</span>
-                            </button>
-                          </>
-                        )}
+                      {/* Segmented Status Control */}
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">My Status</p>
+                        <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5 items-center max-w-md shadow-inner">
+                          <button
+                            onClick={() => handleUpdateStatus('watchlist')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${
+                              !selectedEntry.is_seen && !selectedEntry.is_played && !(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
+                                ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
+                                : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            <Bookmark className="w-3.5 h-3.5" />
+                            <span>{isGame ? 'Backlog' : 'Watchlist'}</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => handleUpdateStatus('watching')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${
+                              isGame ? selectedEntry.is_playing : selectedEntry.is_watching
+                                ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
+                                : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            {isGame ? <Gamepad className="w-3.5 h-3.5" /> : <Tv className="w-3.5 h-3.5" />}
+                            <span>{isGame ? 'Playing' : 'Watching'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleUpdateStatus('seen')}
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${
+                              isGame ? selectedEntry.is_played : selectedEntry.is_seen
+                                ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
+                                : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            <Trophy className="w-3.5 h-3.5" />
+                            <span>{isGame ? 'Played' : 'Seen'}</span>
+                          </button>
+                        </div>
                       </div>
+
+                      {/* Custom Groups Assignment */}
+                      <div className="space-y-2 pt-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                          {isGame ? 'Game Playlists / Groups' : 'Custom Groups'}
+                        </p>
+                        <div className="flex flex-wrap gap-2 items-center">
+                          {groups.length === 0 ? (
+                            <p className="text-slate-500 text-[10px] italic">
+                              No custom groups created. Click "Manage" in the filter panel to create one.
+                            </p>
+                          ) : (
+                            groups.map(group => {
+                              const isMember = selectedEntry.custom_groups?.some(g => g.id === group.id)
+                              return (
+                                <button
+                                  key={group.id}
+                                  type="button"
+                                  onClick={() => handleToggleGroup(group)}
+                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${
+                                    isMember
+                                      ? (isGame ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-md' : 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-md')
+                                      : 'bg-slate-950/60 border-white/5 text-slate-400 hover:border-slate-800'
+                                  }`}
+                                >
+                                  {isMember ? '✓ ' : '+ '}
+                                  {group.name}
+                                </button>
+                              )
+                            })
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Edit / Remove actions */}
+                      {selectedEntry.id && (
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => { handleEditClick(selectedEntry); setShowViewModal(false); }}
+                            className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold transition-all text-slate-300 flex items-center justify-center gap-1.5"
+                            title="Edit details"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit Metadata</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(selectedEntry.id)}
+                            className="py-2.5 px-4 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2906,6 +3172,96 @@ export default function PopcornDashboard() {
           {chatOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
         </button>
       </div>
+
+      {/* Custom Groups Management Modal */}
+      {showGroupsModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowGroupsModal(false)} />
+          <div className="relative bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-950/40">
+              <div>
+                <h2 className="text-lg font-black text-white uppercase">
+                  {isGame ? 'Manage Game Playlists' : 'Manage Movie Groups'}
+                </h2>
+                <p className="text-slate-400 text-xs mt-1">Create and delete custom wishlist groups.</p>
+              </div>
+              <button onClick={() => setShowGroupsModal(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh]">
+              {/* Create Group Form */}
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newGroupName.trim()) return;
+                setIsSavingGroup(true);
+                try {
+                  const res = await groupsApi.create({ name: newGroupName.trim(), type: appMode });
+                  setGroups(prev => [res, ...prev]);
+                  setNewGroupName('');
+                  toast.success(`Group "${res.name}" created!`);
+                } catch (err) {
+                  toast.error('Failed to create group');
+                } finally {
+                  setIsSavingGroup(false);
+                }
+              }} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="New group name..."
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className={`flex-1 bg-slate-950/60 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
+                />
+                <button
+                  type="submit"
+                  disabled={isSavingGroup}
+                  className={`px-4 py-2 text-white font-bold rounded-xl text-xs transition-colors shrink-0 ${bgPrimaryColor}`}
+                >
+                  {isSavingGroup ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
+                </button>
+              </form>
+
+              {/* Groups List */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Existing Groups</p>
+                {groups.length === 0 ? (
+                  <p className="text-slate-500 text-xs italic py-4 text-center">No groups created yet.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {groups.map(g => (
+                      <div key={g.id} className="flex justify-between items-center p-3 bg-slate-950/40 border border-white/5 rounded-xl hover:border-slate-800 transition-colors">
+                        <span className="text-xs font-bold text-slate-200">{g.name}</span>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Are you sure you want to delete group "${g.name}"? Items inside it won't be deleted.`)) return;
+                            try {
+                              await groupsApi.delete(g.id);
+                              setGroups(prev => prev.filter(x => x.id !== g.id));
+                              if (selectedGroupFilter === g.id.toString()) {
+                                setSelectedGroupFilter('All');
+                              }
+                              toast.success('Group deleted');
+                            } catch (err) {
+                              toast.error('Failed to delete group');
+                            }
+                          }}
+                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/15 transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

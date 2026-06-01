@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 # --- Auth Schemas ---
@@ -28,6 +28,27 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id: Optional[int] = None
 
+
+# --- Custom Group Schemas ---
+class CustomGroupBase(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    type: str = Field(..., min_length=1, max_length=50)  # 'popcorn' or 'gamecorn'
+
+class CustomGroupCreate(CustomGroupBase):
+    pass
+
+class CustomGroupUpdate(BaseModel):
+    name: Optional[str] = None
+
+class CustomGroupOut(CustomGroupBase):
+    id: int
+    user_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # --- Popcorn Entry Schemas ---
 class PopcornEntryBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
@@ -41,10 +62,11 @@ class PopcornEntryBase(BaseModel):
     poster_data: Optional[str] = None
     my_rating: Optional[float] = Field(None, ge=0, le=5)
     is_seen: Optional[bool] = False
+    is_watching: Optional[bool] = False
     tags: Optional[str] = None
 
 class PopcornEntryCreate(PopcornEntryBase):
-    pass
+    group_ids: Optional[List[int]] = None
 
 class PopcornEntryUpdate(BaseModel):
     title: Optional[str] = None
@@ -58,13 +80,16 @@ class PopcornEntryUpdate(BaseModel):
     poster_data: Optional[str] = None
     my_rating: Optional[float] = None
     is_seen: Optional[bool] = None
+    is_watching: Optional[bool] = None
     tags: Optional[str] = None
+    group_ids: Optional[List[int]] = None
 
 class PopcornEntryOut(PopcornEntryBase):
     id: int
     user_id: int
     created_at: datetime
     updated_at: Optional[datetime]
+    custom_groups: List[CustomGroupOut] = []
 
     class Config:
         from_attributes = True
@@ -82,10 +107,11 @@ class GameEntryBase(BaseModel):
     poster_data: Optional[str] = None
     my_rating: Optional[float] = Field(None, ge=0, le=5)
     is_played: Optional[bool] = False
+    is_playing: Optional[bool] = False
     tags: Optional[str] = None
 
 class GameEntryCreate(GameEntryBase):
-    pass
+    group_ids: Optional[List[int]] = None
 
 class GameEntryUpdate(BaseModel):
     title: Optional[str] = None
@@ -98,21 +124,22 @@ class GameEntryUpdate(BaseModel):
     poster_data: Optional[str] = None
     my_rating: Optional[float] = None
     is_played: Optional[bool] = None
+    is_playing: Optional[bool] = None
     tags: Optional[str] = None
+    group_ids: Optional[List[int]] = None
 
 class GameEntryOut(GameEntryBase):
     id: int
     user_id: int
     created_at: datetime
     updated_at: Optional[datetime]
+    custom_groups: List[CustomGroupOut] = []
 
     class Config:
         from_attributes = True
 
 
 # --- AI Chatbot Schemas ---
-from typing import List
-
 class ChatMessage(BaseModel):
     role: str  # 'user', 'assistant', or 'system'
     content: str
@@ -120,6 +147,3 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     app_mode: str = "popcorn"  # 'popcorn' or 'gamecorn'
-
-
-

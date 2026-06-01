@@ -62,6 +62,13 @@ export const aiApi = {
   chat: (data) => api.post('/ai/chat', data).then(r => r.data),
 }
 
+export const groupsApi = {
+  getAll: (type) => api.get('/groups/', { params: { type } }).then(r => r.data),
+  create: (data) => api.post('/groups/', data).then(r => r.data),
+  update: (id, data) => api.put(`/groups/${id}`, data).then(r => r.data),
+  delete: (id) => api.delete(`/groups/${id}`).then(r => r.data),
+}
+
 export default api
 
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database.db import get_db
-from app.models.models import User, GameEntry
+from app.models.models import User, GameEntry, CustomGroup
 from app.schemas import schemas
 from app.services.auth import get_current_user
 
@@ -37,6 +37,10 @@ def create_game_entry(entry: schemas.GameEntryCreate, current_user: User = Depen
         except Exception as e:
             print(f"Error auto-enriching game description on creation: {e}")
 
+    groups = []
+    if entry.group_ids:
+        groups = db.query(CustomGroup).filter(CustomGroup.id.in_(entry.group_ids), CustomGroup.user_id == current_user.id).all()
+
     new_entry = GameEntry(
         user_id=current_user.id,
         title=entry.title,
@@ -49,7 +53,9 @@ def create_game_entry(entry: schemas.GameEntryCreate, current_user: User = Depen
         poster_data=entry.poster_data,
         my_rating=entry.my_rating,
         is_played=entry.is_played,
-        tags=entry.tags
+        is_playing=entry.is_playing,
+        tags=entry.tags,
+        custom_groups=groups
     )
     db.add(new_entry)
     db.commit()
@@ -62,8 +68,13 @@ def update_game_entry(entry_id: int, entry_data: schemas.GameEntryUpdate, curren
     if not db_entry:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game entry not found")
 
-    for key, val in entry_data.model_dump(exclude_unset=True).items():
+    exclude_fields = {"group_ids"}
+    for key, val in entry_data.model_dump(exclude_unset=True, exclude=exclude_fields).items():
         setattr(db_entry, key, val)
+
+    if entry_data.group_ids is not None:
+        groups = db.query(CustomGroup).filter(CustomGroup.id.in_(entry_data.group_ids), CustomGroup.user_id == current_user.id).all()
+        db_entry.custom_groups = groups
 
     db.commit()
     db.refresh(db_entry)
