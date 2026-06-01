@@ -47,9 +47,7 @@ export default function Register() {
         
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-600/10 border border-orange-500/20 text-orange-500 mb-4 shadow-lg shadow-orange-500/5">
-            <Film className="w-8 h-8" />
-          </div>
+          <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain mb-4 mx-auto rounded-2xl" />
           <h1 className="text-3xl font-black tracking-tight text-white">Create Account</h1>
           <p className="text-slate-400 text-sm mt-2">Start your custom movie collection today</p>
         </div>

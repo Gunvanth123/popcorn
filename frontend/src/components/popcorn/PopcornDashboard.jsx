@@ -2006,8 +2006,8 @@ export default function PopcornDashboard() {
       {/* Navbar Header */}
       <header className="border-b border-white/5 bg-slate-900/40 backdrop-blur-md sticky top-0 z-20 relative">
         <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <BrandIcon className={`w-6 h-6 animate-pulse ${isGame ? 'text-emerald-400' : 'text-orange-500'}`} />
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain rounded-lg" />
             <h1 className={`font-black text-xl tracking-tight bg-gradient-to-r ${brandGradient} bg-clip-text text-transparent uppercase hidden sm:block`}>{brandName}</h1>
           </div>
 
