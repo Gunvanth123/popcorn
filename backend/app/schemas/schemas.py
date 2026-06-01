@@ -66,6 +66,7 @@ class PopcornEntryBase(BaseModel):
     is_seen: Optional[bool] = False
     is_watching: Optional[bool] = False
     tags: Optional[str] = None
+    rank: Optional[int] = None
 
 class PopcornEntryCreate(PopcornEntryBase):
     group_ids: Optional[List[int]] = None
@@ -84,6 +85,7 @@ class PopcornEntryUpdate(BaseModel):
     is_seen: Optional[bool] = None
     is_watching: Optional[bool] = None
     tags: Optional[str] = None
+    rank: Optional[int] = None
     group_ids: Optional[List[int]] = None
 
 class PopcornEntryOut(PopcornEntryBase):
@@ -111,6 +113,7 @@ class GameEntryBase(BaseModel):
     is_played: Optional[bool] = False
     is_playing: Optional[bool] = False
     tags: Optional[str] = None
+    rank: Optional[int] = None
 
 class GameEntryCreate(GameEntryBase):
     group_ids: Optional[List[int]] = None
@@ -128,6 +131,7 @@ class GameEntryUpdate(BaseModel):
     is_played: Optional[bool] = None
     is_playing: Optional[bool] = None
     tags: Optional[str] = None
+    rank: Optional[int] = None
     group_ids: Optional[List[int]] = None
 
 class GameEntryOut(GameEntryBase):

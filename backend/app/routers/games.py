@@ -55,6 +55,7 @@ def create_game_entry(entry: schemas.GameEntryCreate, current_user: User = Depen
         is_played=entry.is_played,
         is_playing=entry.is_playing,
         tags=entry.tags,
+        rank=entry.rank,
         custom_groups=groups
     )
     db.add(new_entry)

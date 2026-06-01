@@ -51,6 +51,7 @@ class PopcornEntry(Base):
     is_seen = Column(Boolean, default=False, server_default="false")  # Whether the user has seen it
     is_watching = Column(Boolean, default=False, server_default="false")  # Whether the user is currently watching it
     tags = Column(Text, nullable=True)  # Comma-separated user tags
+    rank = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -74,6 +75,7 @@ class GameEntry(Base):
     is_played = Column(Boolean, default=False, server_default="false")
     is_playing = Column(Boolean, default=False, server_default="false")
     tags = Column(Text, nullable=True)
+    rank = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

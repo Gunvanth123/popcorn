@@ -36,6 +36,7 @@ def create_entry(entry: schemas.PopcornEntryCreate, current_user: User = Depends
         is_seen=entry.is_seen,
         is_watching=entry.is_watching,
         tags=entry.tags,
+        rank=entry.rank,
         custom_groups=groups
     )
     db.add(new_entry)

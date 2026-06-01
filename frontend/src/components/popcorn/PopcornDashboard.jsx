@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { popcornApi, tmdbApi, gamesApi, rawgApi, aiApi, groupsApi } from '../../api/client'
+import { authApi, popcornApi, tmdbApi, gamesApi, rawgApi, aiApi, groupsApi } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import {
   Plus, Trash2, Edit3, Loader2, Image as ImageIcon, Search,
   Popcorn as PopcornIcon, ExternalLink, ChevronRight, X,
   TrendingUp, Settings, Film, Tv, Star, Globe, Check, ChevronLeft, Sparkles,
   Rocket, Bookmark, Gamepad2, Gamepad, Trophy, MessageSquare, Send,
-  Sun, Moon
+  Crown
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import LazyRow from './LazyRow'
@@ -236,39 +236,39 @@ const PopcornSlider = ({ value, onChange, isGame = false }) => {
 
 const renderMarkdown = (text) => {
   if (!text) return "";
-  
+
   const paragraphs = text.split("\n\n");
-  
+
   return paragraphs.map((para, pIdx) => {
     let html = para;
-    
+
     // Bold: **text**
     html = html.replace(/\*\*(.*?)\*\*/g, 'strong_start$1strong_end');
-    
+
     // Italics: *text*
     html = html.replace(/\*(.*?)\*/g, 'em_start$1em_end');
-    
+
     // Bullet list items
     const isBulletList = para.trim().startsWith('- ') || para.trim().startsWith('* ');
     if (isBulletList) {
       const items = para.split(/\n[-*]\s+/);
       const listItems = items.map((item, iIdx) => {
         if (iIdx === 0 && item.trim() === '') return null;
-        
+
         let cleaned = item.trim();
         if (cleaned.startsWith('- ') || cleaned.startsWith('* ')) {
           cleaned = cleaned.substring(2);
         }
-        
+
         cleaned = cleaned.replace(/strong_start/g, '<strong>').replace(/strong_end/g, '</strong>');
         cleaned = cleaned.replace(/em_start/g, '<em>').replace(/em_end/g, '</em>');
-        
+
         return <li key={iIdx} dangerouslySetInnerHTML={{ __html: cleaned }} />;
       }).filter(Boolean);
-      
+
       return <ul key={pIdx} className="list-disc pl-5 my-1.5">{listItems}</ul>;
     }
-    
+
     // Numbered list items
     const isNumberedList = /^\d+\.\s+/.test(para.trim());
     if (isNumberedList) {
@@ -279,21 +279,21 @@ const renderMarkdown = (text) => {
           if (match) item = match[1];
           else return null;
         }
-        
+
         let cleaned = item.trim();
         cleaned = cleaned.replace(/strong_start/g, '<strong>').replace(/strong_end/g, '</strong>');
         cleaned = cleaned.replace(/em_start/g, '<em>').replace(/em_end/g, '</em>');
-        
+
         return <li key={iIdx} dangerouslySetInnerHTML={{ __html: cleaned }} />;
       }).filter(Boolean);
-      
+
       return <ol key={pIdx} className="list-decimal pl-5 my-1.5">{listItems}</ol>;
     }
-    
+
     html = html.replace(/strong_start/g, '<strong>').replace(/strong_end/g, '</strong>');
     html = html.replace(/em_start/g, '<em>').replace(/em_end/g, '</em>');
     html = html.replace(/\n/g, '<br />');
-    
+
     return <p key={pIdx} className="mb-2" dangerouslySetInnerHTML={{ __html: html }} />;
   });
 };
@@ -309,7 +309,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
   const avgRating = ratedEntries.length > 0
     ? (ratedEntries.reduce((sum, e) => sum + e.my_rating, 0) / ratedEntries.length).toFixed(1)
     : '0.0'
-    
+
   // Statuses
   const watchingCount = entries.filter(e => isGame ? e.is_playing : e.is_watching).length
   const seenCount = entries.filter(e => isGame ? e.is_played : e.is_seen).length
@@ -332,7 +332,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
       })
     }
   })
-  
+
   // Sort genres
   const topGenres = Object.entries(genreCounts)
     .sort((a, b) => b[1] - a[1])
@@ -459,6 +459,259 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
   )
 }
 
+const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi, PopcornRating }) => {
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [selectedAddId, setSelectedAddId] = useState('')
+  const brandColorText = isGame ? 'text-emerald-400' : 'text-orange-500'
+  const brandBg = isGame ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-orange-500/10 border-orange-500/20'
+  const selectFocus = isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'
+
+  // Get ranked entries, sorted by rank ascending
+  const rankedItems = entries
+    .filter(e => e.rank !== null && e.rank !== undefined)
+    .sort((a, b) => a.rank - b.rank)
+
+  // Get unranked entries for dropdown selection
+  const unrankedItems = entries.filter(e => e.rank === null || e.rank === undefined)
+
+  const handleAdd = async (e) => {
+    e.preventDefault()
+    if (!selectedAddId || isUpdating) return
+    setIsUpdating(true)
+    try {
+      const selectedItem = entries.find(x => x.id === parseInt(selectedAddId))
+      if (selectedItem) {
+        const nextRank = rankedItems.length + 1
+        if (isGame) {
+          await gamesApi.update(selectedItem.id, { rank: nextRank })
+        } else {
+          await popcornApi.update(selectedItem.id, { rank: nextRank })
+        }
+        toast.success(`"${selectedItem.title}" ranked #${nextRank}!`)
+        setSelectedAddId('')
+        await fetchEntries()
+      }
+    } catch (err) {
+      toast.error('Failed to add to leaderboard')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleMove = async (index, direction) => {
+    if (isUpdating) return
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= rankedItems.length) return
+
+    setIsUpdating(true)
+    try {
+      const itemA = rankedItems[index]
+      const itemB = rankedItems[targetIndex]
+
+      const rankA = itemA.rank
+      const rankB = itemB.rank
+
+      if (isGame) {
+        await gamesApi.update(itemA.id, { rank: rankB })
+        await gamesApi.update(itemB.id, { rank: rankA })
+      } else {
+        await popcornApi.update(itemA.id, { rank: rankB })
+        await popcornApi.update(itemB.id, { rank: rankA })
+      }
+
+      toast.success('Leaderboard updated')
+      await fetchEntries()
+    } catch (err) {
+      toast.error('Failed to update ranking order')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleRemove = async (item) => {
+    if (isUpdating) return
+    setIsUpdating(true)
+    try {
+      const currentRank = item.rank
+      // Clear rank on target item
+      if (isGame) {
+        await gamesApi.update(item.id, { rank: null })
+      } else {
+        await popcornApi.update(item.id, { rank: null })
+      }
+
+      // Shift ranks of remaining items to close the gap
+      const itemsToShift = rankedItems.filter(x => x.rank > currentRank)
+      for (const otherItem of itemsToShift) {
+        if (isGame) {
+          await gamesApi.update(otherItem.id, { rank: otherItem.rank - 1 })
+        } else {
+          await popcornApi.update(otherItem.id, { rank: otherItem.rank - 1 })
+        }
+      }
+
+      toast.success(`Removed "${item.title}" from leaderboard`)
+      await fetchEntries()
+    } catch (err) {
+      toast.error('Failed to remove from leaderboard')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <Crown className="w-6 h-6 text-yellow-500 animate-pulse" />
+            <span>Personal Leaderboard</span>
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            Rank your absolute favorite {isGame ? 'games' : 'movies & shows'}. Reorder them using the controls to curate your ultimate standouts.
+          </p>
+        </div>
+
+        {/* Add Item to Leaderboard Form */}
+        {unrankedItems.length > 0 && (
+          <form onSubmit={handleAdd} className="flex items-center gap-2 bg-slate-900/40 border border-slate-800/80 p-1.5 rounded-2xl animate-in fade-in duration-300">
+            <select
+              value={selectedAddId}
+              onChange={(e) => setSelectedAddId(e.target.value)}
+              className={`bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 outline-none transition-all ${selectFocus} max-w-[200px] sm:max-w-xs`}
+            >
+              <option value="">-- Choose item to rank --</option>
+              {unrankedItems.map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.title} ({isGame ? item.platform : item.category})
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              disabled={!selectedAddId || isUpdating}
+              className={`px-4 py-1.5 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1 shrink-0 ${isGame ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-orange-600 hover:bg-orange-500'
+                } disabled:opacity-40 disabled:pointer-events-none`}
+            >
+              {isUpdating ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Rank Item</span>
+                </>
+              )}
+            </button>
+          </form>
+        )}
+      </div>
+
+      {rankedItems.length === 0 ? (
+        <div className="bg-slate-900/20 border border-slate-800/60 p-12 rounded-3xl text-center backdrop-blur-sm">
+          <Crown className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Your Leaderboard is Empty</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-2 leading-relaxed">
+            You haven't ranked any {isGame ? 'games' : 'movies or shows'} yet! Select a title from the dropdown above to add it to your leaderboard.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {rankedItems.map((item, index) => {
+            const isTop3 = item.rank <= 3
+            const rankLabel = item.rank === 1 ? '🥇 1st' : item.rank === 2 ? '🥈 2nd' : item.rank === 3 ? '🥉 3rd' : `#${item.rank}`
+            const rankBadgeColor = item.rank === 1
+              ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.15)] font-black text-xs scale-[1.05]'
+              : item.rank === 2
+                ? 'bg-slate-300/10 border-slate-300/30 text-slate-300 font-black text-xs'
+                : item.rank === 3
+                  ? 'bg-amber-600/10 border-amber-600/30 text-amber-500 font-black text-xs'
+                  : 'bg-slate-950/80 border-white/5 text-slate-400 text-[11px] font-bold'
+
+            return (
+              <div
+                key={item.id}
+                className="group relative bg-slate-900/40 hover:bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 p-4 rounded-3xl flex items-center justify-between gap-4 transition-all duration-300 backdrop-blur-md"
+              >
+                {/* Left side: Rank, Image and metadata */}
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  {/* Rank Badge */}
+                  <div className={`w-16 h-8 flex items-center justify-center rounded-xl border shrink-0 uppercase tracking-wider transition-transform duration-300 ${rankBadgeColor}`}>
+                    {rankLabel}
+                  </div>
+
+                  {/* Thumbnail */}
+                  {item.poster_url ? (
+                    <img
+                      src={item.poster_url}
+                      alt={item.title}
+                      className="w-10 h-14 object-cover rounded-xl border border-white/5 shadow-md shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-14 bg-slate-950 rounded-xl border border-white/5 flex items-center justify-center shrink-0">
+                      {isGame ? <Gamepad className="w-5 h-5 text-slate-600" /> : <Film className="w-5 h-5 text-slate-600" />}
+                    </div>
+                  )}
+
+                  {/* Text details */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-white truncate">{item.title}</span>
+                      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5">
+                        {isGame ? item.platform : item.category}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      {item.my_rating && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400">My Rating:</span>
+                          <PopcornRating rating={item.my_rating} isGame={isGame} />
+                        </div>
+                      )}
+                      {item.genres && (
+                        <span className="text-[10px] text-slate-500 truncate hidden sm:inline">
+                          {item.genres.split(', ').slice(0, 2).join(' • ')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side: Reorder / Delete Controls */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => handleMove(index, 'up')}
+                    disabled={index === 0 || isUpdating}
+                    className="p-2 bg-slate-950/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                    title="Move Up"
+                  >
+                    <ChevronLeft className="w-4 h-4 rotate-90" />
+                  </button>
+                  <button
+                    onClick={() => handleMove(index, 'down')}
+                    disabled={index === rankedItems.length - 1 || isUpdating}
+                    className="p-2 bg-slate-950/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                    title="Move Down"
+                  >
+                    <ChevronLeft className="w-4 h-4 -rotate-90" />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(item)}
+                    disabled={isUpdating}
+                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-xl border border-red-500/15 transition-all"
+                    title="Remove from Leaderboard"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const OnboardingModal = ({
   authApi,
   tmdbApi,
@@ -472,27 +725,28 @@ const OnboardingModal = ({
   setShowSaveCelebration
 }) => {
   const [step, setStep] = useState(1)
-  
-  // Step 1: Languages selection
+  const [tutorialSlide, setTutorialSlide] = useState(0)
+
+  // Step 2: Languages selection
   const [selectedLangs, setSelectedLangs] = useState([])
-  
-  // Step 2: Movies search & selection
+
+  // Step 3: Movies search & selection
   const [movieQuery, setMovieQuery] = useState('')
   const [movieResults, setMovieResults] = useState([])
   const [movieLoading, setMovieLoading] = useState(false)
   const [selectedMovies, setSelectedMovies] = useState([])
-  
-  // Step 3: Games search & selection
+
+  // Step 4: Games search & selection
   const [gameQuery, setGameQuery] = useState('')
   const [gameResults, setGameResults] = useState([])
   const [gameLoading, setGameLoading] = useState(false)
   const [selectedGames, setSelectedGames] = useState([])
-  
+
   const [isSubmittingOnboard, setIsSubmittingOnboard] = useState(false)
 
   // Debounced TMDB search for movies onboarding
   useEffect(() => {
-    if (step !== 2) return
+    if (step !== 3) return
     const delayDebounce = setTimeout(async () => {
       if (movieQuery.trim().length > 1) {
         setMovieLoading(true)
@@ -513,7 +767,7 @@ const OnboardingModal = ({
 
   // Debounced RAWG search for games onboarding
   useEffect(() => {
-    if (step !== 3) return
+    if (step !== 4) return
     const delayDebounce = setTimeout(async () => {
       if (gameQuery.trim().length > 1) {
         setGameLoading(true)
@@ -603,17 +857,17 @@ const OnboardingModal = ({
         movies: selectedMovies,
         games: selectedGames
       })
-      
+
       setShowSaveCelebration(true)
       setTimeout(() => setShowSaveCelebration(false), 2500)
-      
+
       toast.success('Onboarding complete! Loading your custom dashboard...')
-      
+
       await refreshUser()
       fetchPersonalizedRecs()
       fetchRecommendations()
       fetchEntries()
-      
+
       setShowOnboarding(false)
     } catch (err) {
       toast.error('Onboarding failed. Please try again.')
@@ -625,19 +879,20 @@ const OnboardingModal = ({
   return (
     <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md select-none">
       <div className="relative bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="p-6 border-b border-white/5 bg-slate-950/40 flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Step {step} of 3</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Step {step} of 4</span>
             <h2 className="text-lg font-black text-white uppercase tracking-wider mt-1">
-              {step === 1 && "Select Preferred Languages"}
-              {step === 2 && "Pick Liked Movies, Shows & Anime"}
-              {step === 3 && "Pick Liked Games"}
+              {step === 1 && "Application Features Overview"}
+              {step === 2 && "Select Preferred Languages"}
+              {step === 3 && "Pick Liked Movies, Shows & Anime"}
+              {step === 4 && "Pick Liked Games"}
             </h2>
           </div>
           <div className="flex gap-1">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3, 4].map(i => (
               <div key={i} className={`w-6 h-1.5 rounded-full transition-all duration-300 ${i <= step ? 'bg-orange-500' : 'bg-slate-800'}`} />
             ))}
           </div>
@@ -646,6 +901,147 @@ const OnboardingModal = ({
         {/* Body */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {step === 1 && (
+            <div className="space-y-6">
+              {/* Carousel card */}
+              <div className="bg-slate-950/40 border border-slate-800/80 p-6 rounded-3xl min-h-[320px] flex flex-col justify-between items-center text-center relative overflow-hidden">
+                {/* Glow blob */}
+                <div className={`absolute -top-12 -left-12 w-36 h-36 rounded-full blur-2xl pointer-events-none opacity-20 transition-colors duration-500 ${tutorialSlide === 0 ? 'bg-orange-500' :
+                    tutorialSlide === 1 ? 'bg-purple-500' :
+                      tutorialSlide === 2 ? 'bg-cyan-500' : 'bg-emerald-500'
+                  }`} />
+
+                <div className="flex-grow w-full py-2 animate-in fade-in zoom-in-95 duration-300">
+                  {tutorialSlide === 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+                        <div className="p-4 rounded-3xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-bounce self-center md:self-start">
+                          <Sparkles className="w-8 h-8 animate-pulse" />
+                        </div>
+                        <h3 className="text-lg font-black text-white uppercase tracking-wider">Welcome to Popcorn & GameCorn</h3>
+                        <p className="text-slate-300 text-xs leading-relaxed">
+                          A premium double-sided hub designed to track your entire entertainment library. Seamlessly switch between **Popcorn Mode** for movies/shows and **GameCorn Mode** for games using the switcher in the header.
+                        </p>
+                      </div>
+                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                        <img
+                          src="/tutorial_welcome.png"
+                          alt="Welcome Tutorial"
+                          className="w-full max-h-[180px] md:max-h-[220px] object-cover rounded-xl transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
+
+                  {tutorialSlide === 1 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+                        <div className="p-4 rounded-3xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] self-center md:self-start">
+                          <Bookmark className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-black text-white uppercase tracking-wider">Statuses & Tracking</h3>
+                        <p className="text-slate-300 text-xs leading-relaxed">
+                          Organize your titles: send to **Watchlist / Backlog**, log active sessions in **Currently Watching / Currently Playing** (with count badges), or store completed logs in **Seen / Played** with custom reviews.
+                        </p>
+                      </div>
+                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                        <img
+                          src="/tutorial_tracking.png"
+                          alt="Tracking Tutorial"
+                          className="w-full max-h-[180px] md:max-h-[220px] object-cover rounded-xl transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
+
+                  {tutorialSlide === 2 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+                        <div className="p-4 rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.3)] self-center md:self-start">
+                          <Plus className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-black text-white uppercase tracking-wider">Custom Wishlist Groups</h3>
+                        <p className="text-slate-300 text-xs leading-relaxed">
+                          Create multiple groups like "Weekend Binge", "Co-op Backlog", or "Anime Classics" and associate items dynamically to build highly tailored custom wishlists.
+                        </p>
+                      </div>
+                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                        <img
+                          src="/tutorial_groups.png"
+                          alt="Groups Tutorial"
+                          className="w-full max-h-[180px] md:max-h-[220px] object-cover rounded-xl transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
+
+                  {tutorialSlide === 3 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+                        <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] self-center md:self-start">
+                          <Trophy className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-black text-white uppercase tracking-wider">AI Assistant & Insights</h3>
+                        <p className="text-slate-300 text-xs leading-relaxed">
+                          Ask your context-aware **AI assistant** for recommendations or watchlist analysis, and view real-time library metrics (genre progress bars and platform counts) on the new **Stats Panel**.
+                        </p>
+                      </div>
+                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                        <img
+                          src="/tutorial_ai.png"
+                          alt="AI & Stats Tutorial"
+                          className="w-full max-h-[180px] md:max-h-[220px] object-cover rounded-xl transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dot markers */}
+                <div className="flex gap-2 mt-4">
+                  {[0, 1, 2, 3].map(i => (
+                    <button
+                      key={i}
+                      onClick={() => setTutorialSlide(i)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${tutorialSlide === i ? 'bg-orange-500 w-6' : 'bg-slate-800'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Prev/Next buttons for slide */}
+              <div className="flex justify-between items-center px-2">
+                <button
+                  disabled={tutorialSlide === 0}
+                  onClick={() => setTutorialSlide(prev => prev - 1)}
+                  className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-40"
+                >
+                  Previous Slide
+                </button>
+                {tutorialSlide < 3 ? (
+                  <button
+                    onClick={() => setTutorialSlide(prev => prev + 1)}
+                    className="px-4 py-2 bg-slate-800 text-white font-bold rounded-xl text-xs hover:bg-slate-700 transition-colors"
+                  >
+                    Next Slide
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setStep(2)}
+                    className="px-5 py-2 bg-orange-600 text-white font-bold rounded-xl text-xs hover:bg-orange-500 transition-all flex items-center gap-1.5"
+                  >
+                    <span>Proceed to Setup</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
                 Select the languages you prefer to watch content in. We will use this to fine-tune your personalized recommendations. (Pick up to 10)
@@ -657,11 +1053,10 @@ const OnboardingModal = ({
                     <button
                       key={lang}
                       onClick={() => handleToggleLang(lang)}
-                      className={`p-3 rounded-2xl border text-xs font-bold transition-all text-center flex items-center justify-between ${
-                        active
+                      className={`p-3 rounded-2xl border text-xs font-bold transition-all text-center flex items-center justify-between ${active
                           ? 'bg-orange-500/10 border-orange-500 text-orange-400 shadow-[0_0_12px_rgba(249,115,22,0.15)]'
                           : 'bg-slate-950/50 border-white/5 text-slate-400 hover:border-slate-800 hover:text-slate-200'
-                      }`}
+                        }`}
                     >
                       <span>{lang}</span>
                       {active && <Check className="w-3.5 h-3.5 text-orange-400" />}
@@ -672,12 +1067,12 @@ const OnboardingModal = ({
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
                 Search and add movies, TV shows, or anime series you have watched and liked. This seeds your recommendation engine. (Pick up to 10)
               </p>
-              
+
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
@@ -717,11 +1112,10 @@ const OnboardingModal = ({
                         </div>
                         <button
                           onClick={() => handleSelectMovie(movie)}
-                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${
-                            alreadySelected
+                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${alreadySelected
                               ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
                               : 'bg-orange-600 hover:bg-orange-500 text-white'
-                          }`}
+                            }`}
                         >
                           {alreadySelected ? 'Remove' : 'Like'}
                         </button>
@@ -750,12 +1144,12 @@ const OnboardingModal = ({
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
                 Search and add games you have played and loved. This seeds your recommendation engine. (Pick up to 10)
               </p>
-              
+
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
@@ -795,11 +1189,10 @@ const OnboardingModal = ({
                         </div>
                         <button
                           onClick={() => handleSelectGame(game)}
-                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${
-                            alreadySelected
+                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${alreadySelected
                               ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
                               : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                          }`}
+                            }`}
                         >
                           {alreadySelected ? 'Remove' : 'Like'}
                         </button>
@@ -838,10 +1231,10 @@ const OnboardingModal = ({
           >
             Back
           </button>
-          {step < 3 ? (
+          {step < 4 ? (
             <button
               onClick={() => {
-                if (step === 1 && selectedLangs.length === 0) {
+                if (step === 2 && selectedLangs.length === 0) {
                   toast.error('Please select at least one language!')
                   return
                 }
@@ -878,7 +1271,6 @@ export default function PopcornDashboard() {
   const navigate = useNavigate()
 
   const [appMode, setAppMode] = useState(() => localStorage.getItem('popcorn_app_mode') || 'popcorn')
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
@@ -886,17 +1278,6 @@ export default function PopcornDashboard() {
       setShowOnboarding(true)
     }
   }, [user])
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(nextTheme)
-    localStorage.setItem('theme', nextTheme)
-    if (nextTheme === 'light') {
-      document.documentElement.classList.remove('dark')
-    } else {
-      document.documentElement.classList.add('dark')
-    }
-  }
 
   // AI Chatbot State
   const [chatOpen, setChatOpen] = useState(false)
@@ -1400,7 +1781,7 @@ export default function PopcornDashboard() {
     // Toggle association
     const currentGroupIds = selectedEntry.custom_groups ? selectedEntry.custom_groups.map(g => g.id) : []
     const isMember = currentGroupIds.includes(group.id)
-    const newGroupIds = isMember 
+    const newGroupIds = isMember
       ? currentGroupIds.filter(id => id !== group.id)
       : [...currentGroupIds, group.id]
 
@@ -1436,7 +1817,7 @@ export default function PopcornDashboard() {
         group_ids: newGroupIds
       }
 
-      const res = isGame 
+      const res = isGame
         ? await gamesApi.update(selectedEntry.id, payload)
         : await popcornApi.update(selectedEntry.id, payload)
 
@@ -1450,6 +1831,13 @@ export default function PopcornDashboard() {
 
   const handleSaveSeen = async () => {
     try {
+      const isFirstSeen = selectedEntry.id
+        ? (isGame ? !selectedEntry.is_played : !selectedEntry.is_seen)
+        : true
+
+      const currentRankedCount = entries.filter(e => e.rank !== null && e.rank !== undefined).length
+      const nextRank = isFirstSeen ? currentRankedCount + 1 : selectedEntry.rank
+
       if (selectedEntry.id) {
         // Update existing entry in database
         const payload = isGame ? {
@@ -1463,6 +1851,7 @@ export default function PopcornDashboard() {
           poster_data: selectedEntry.poster_data,
           my_rating: seenRating,
           is_played: true,
+          rank: nextRank,
           tags: selectedTags.join(', ')
         } : {
           title: selectedEntry.title,
@@ -1476,6 +1865,7 @@ export default function PopcornDashboard() {
           poster_data: selectedEntry.poster_data,
           my_rating: seenRating,
           is_seen: true,
+          rank: nextRank,
           tags: selectedTags.join(', ')
         }
         const res = isGame
@@ -1490,7 +1880,12 @@ export default function PopcornDashboard() {
           setSelectedEntry(res)
           setShowSeenForm(false)
           setShowViewModal(false)
-          toast.success(isGame ? 'Played review updated successfully!' : 'Seen review updated successfully!')
+          if (isFirstSeen) {
+            setActiveTab('leaderboard')
+            toast.success(`"${selectedEntry.title}" added to Leaderboard! Adjust its ranking below.`)
+          } else {
+            toast.success(isGame ? 'Played review updated successfully!' : 'Seen review updated successfully!')
+          }
         }, 1200)
       } else {
         // Create new entry
@@ -1505,6 +1900,7 @@ export default function PopcornDashboard() {
           poster_data: null,
           my_rating: seenRating,
           is_played: true,
+          rank: nextRank,
           tags: selectedTags.join(', ')
         } : {
           title: selectedEntry.title,
@@ -1518,6 +1914,7 @@ export default function PopcornDashboard() {
           poster_data: null,
           my_rating: seenRating,
           is_seen: true,
+          rank: nextRank,
           tags: selectedTags.join(', ')
         }
         const res = isGame
@@ -1532,7 +1929,8 @@ export default function PopcornDashboard() {
           setSelectedEntry(res)
           setShowSeenForm(false)
           setShowViewModal(false)
-          toast.success(isGame ? `"${selectedEntry.title}" marked as Played!` : `"${selectedEntry.title}" marked as Seen!`)
+          setActiveTab('leaderboard')
+          toast.success(`"${selectedEntry.title}" marked as ${isGame ? 'Played' : 'Seen'} and added to Leaderboard! Adjust its ranking below.`)
         }, 1200)
       }
     } catch (err) {
@@ -1542,6 +1940,8 @@ export default function PopcornDashboard() {
 
   const handleUnmarkSeen = async () => {
     try {
+      const currentRank = selectedEntry.rank
+
       const payload = isGame ? {
         title: selectedEntry.title,
         platform: selectedEntry.platform,
@@ -1553,6 +1953,7 @@ export default function PopcornDashboard() {
         poster_data: selectedEntry.poster_data,
         my_rating: null,
         is_played: false,
+        rank: null,
         tags: null
       } : {
         title: selectedEntry.title,
@@ -1566,15 +1967,30 @@ export default function PopcornDashboard() {
         poster_data: selectedEntry.poster_data,
         my_rating: null,
         is_seen: false,
+        rank: null,
         tags: null
       }
       const res = isGame
         ? await gamesApi.update(selectedEntry.id, payload)
         : await popcornApi.update(selectedEntry.id, payload)
+
       setEntries(prev => prev.map(e => e.id === selectedEntry.id ? res : e))
       setSelectedEntry(res)
       toast.success(isGame ? `"${selectedEntry.title}" moved to Playlist!` : `"${selectedEntry.title}" moved to Watchlist!`)
       setShowViewModal(false)
+
+      // Shift ranks of remaining items to close the gap
+      if (currentRank !== null && currentRank !== undefined) {
+        const itemsToShift = entries.filter(e => e.rank !== null && e.rank !== undefined && e.rank > currentRank)
+        for (const otherItem of itemsToShift) {
+          if (isGame) {
+            await gamesApi.update(otherItem.id, { rank: otherItem.rank - 1 })
+          } else {
+            await popcornApi.update(otherItem.id, { rank: otherItem.rank - 1 })
+          }
+        }
+        await fetchEntries()
+      }
     } catch (err) {
       toast.error(isGame ? 'Failed to move to Playlist' : 'Failed to move to watchlist')
     }
@@ -1640,98 +2056,98 @@ export default function PopcornDashboard() {
     return (
       <LazyRow height="345px">
         <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          {icon}
-          <h3 className="text-base font-black text-white uppercase tracking-wider">{title}</h3>
-        </div>
-
-        <div className="relative group/row">
-          {/* Left Arrow Button */}
-          <button
-            onClick={() => scrollRow(rowId, 'left')}
-            className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
-            title="Scroll Left"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          {/* Carousel */}
-          <div
-            id={rowId}
-            className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row"
-            style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
-          >
-            {items.map((item, idx) => {
-              const inWatchlist = isAlreadyInWatchlist(item.title)
-              return (
-                <div
-                  key={idx}
-                  onClick={() => handleCardClick(item)}
-                  className="movie-3d-card-container min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] flex-shrink-0"
-                >
-                  <div
-                    className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
-                  >
-                    <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
-                    {showRank && (
-                      <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-orange-600/90 text-white flex items-center justify-center font-black text-xs shadow-md z-10">
-                        {idx + 1}
-                      </div>
-                    )}
-                    <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
-                      {item.poster_url ? (
-                        <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
-                          <Film className="w-8 h-8 text-slate-800 mb-1" />
-                          <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5">
-                        <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                        <span>{Number(item.rating || 0).toFixed(1)}</span>
-                      </div>
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300">
-                        {item.category}
-                      </div>
-                    </div>
-                    <div className="p-3 flex-1 flex flex-col justify-between min-h-0">
-                      <div>
-                        <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug group-hover:text-orange-500 transition-colors" title={item.title}>{item.title}</h4>
-                        <p className="text-[9px] text-slate-500 mt-0.5">{item.language}</p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (!inWatchlist) handleAddToWatchlist(item)
-                        }}
-                        disabled={inWatchlist}
-                        className={`w-full mt-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${inWatchlist
-                          ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                          : 'bg-orange-600 hover:bg-orange-500 text-white'
-                          }`}
-                      >
-                        {inWatchlist ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                        <span>{inWatchlist ? 'In Watchlist' : 'Add Watchlist'}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+          <div className="flex items-center gap-2">
+            {icon}
+            <h3 className="text-base font-black text-white uppercase tracking-wider">{title}</h3>
           </div>
 
-          {/* Right Arrow Button */}
-          <button
-            onClick={() => scrollRow(rowId, 'right')}
-            className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
-            title="Scroll Right"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          <div className="relative group/row">
+            {/* Left Arrow Button */}
+            <button
+              onClick={() => scrollRow(rowId, 'left')}
+              className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Carousel */}
+            <div
+              id={rowId}
+              className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row"
+              style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
+            >
+              {items.map((item, idx) => {
+                const inWatchlist = isAlreadyInWatchlist(item.title)
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => handleCardClick(item)}
+                    className="movie-3d-card-container min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] flex-shrink-0"
+                  >
+                    <div
+                      className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
+                    >
+                      <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
+                      {showRank && (
+                        <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-orange-600/90 text-white flex items-center justify-center font-black text-xs shadow-md z-10">
+                          {idx + 1}
+                        </div>
+                      )}
+                      <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
+                        {item.poster_url ? (
+                          <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
+                            <Film className="w-8 h-8 text-slate-800 mb-1" />
+                            <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                          <span>{Number(item.rating || 0).toFixed(1)}</span>
+                        </div>
+                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300">
+                          {item.category}
+                        </div>
+                      </div>
+                      <div className="p-3 flex-1 flex flex-col justify-between min-h-0">
+                        <div>
+                          <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug group-hover:text-orange-500 transition-colors" title={item.title}>{item.title}</h4>
+                          <p className="text-[9px] text-slate-500 mt-0.5">{item.language}</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (!inWatchlist) handleAddToWatchlist(item)
+                          }}
+                          disabled={inWatchlist}
+                          className={`w-full mt-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${inWatchlist
+                            ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                            : 'bg-orange-600 hover:bg-orange-500 text-white'
+                            }`}
+                        >
+                          {inWatchlist ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                          <span>{inWatchlist ? 'In Watchlist' : 'Add Watchlist'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Right Arrow Button */}
+            <button
+              onClick={() => scrollRow(rowId, 'right')}
+              className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-      </div>
-    </LazyRow>
+      </LazyRow>
     )
   }
 
@@ -1951,7 +2367,7 @@ export default function PopcornDashboard() {
   const filteredEntries = entries.filter(e => {
     const isSeenOrPlayed = appMode === 'gamecorn' ? e.is_played : e.is_seen
     const isWatchingOrPlaying = appMode === 'gamecorn' ? e.is_playing : e.is_watching
-    
+
     let matchesTab = false
     if (activeTab === 'watchlist') {
       matchesTab = !isSeenOrPlayed && !isWatchingOrPlaying
@@ -2038,23 +2454,16 @@ export default function PopcornDashboard() {
           <div className="flex items-center gap-2 md:gap-4 shrink-0">
             <Link
               to="/trending"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold shadow-sm ${
-                isGame
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold shadow-sm ${isGame
                   ? 'bg-emerald-600/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-600 hover:text-white'
                   : 'bg-orange-600/10 border-orange-500/20 text-orange-500 hover:bg-orange-600 hover:text-white'
-              }`}
+                }`}
             >
               <TrendingUp className="w-4 h-4" />
               <span className="hidden md:inline">Trending Top 100</span>
             </Link>
 
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl border border-white/5 bg-slate-950/40 hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
+
 
             <button
               onClick={() => navigate('/settings')}
@@ -2159,10 +2568,32 @@ export default function PopcornDashboard() {
             <Trophy className="w-4 h-4 flex-shrink-0" />
             <span>Stats</span>
           </button>
+          <button
+            onClick={() => setActiveTab('leaderboard')}
+            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${activeTab === 'leaderboard'
+              ? activeBorderClass
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+          >
+            <Crown className="w-4 h-4 flex-shrink-0 text-yellow-500" />
+            <span>Leaderboard</span>
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
+              {entries.filter(e => e.rank !== null && e.rank !== undefined).length}
+            </span>
+          </button>
         </div>
 
         {activeTab === 'stats' ? (
           <StatsPanel entries={entries} isGame={isGame} PopcornRating={PopcornRating} />
+        ) : activeTab === 'leaderboard' ? (
+          <LeaderboardPanel
+            entries={entries}
+            isGame={isGame}
+            fetchEntries={fetchEntries}
+            popcornApi={popcornApi}
+            gamesApi={gamesApi}
+            PopcornRating={PopcornRating}
+          />
         ) : ['watchlist', 'watching', 'seen'].includes(activeTab) ? (
           <>
             {/* Filters Panel */}
@@ -2277,8 +2708,8 @@ export default function PopcornDashboard() {
                   {activeTab === 'watchlist'
                     ? (isGame ? 'Start building your collection by adding games manually or checking recommendations!' : 'Start building your collection by adding movies manually or checking recommendations!')
                     : activeTab === 'watching'
-                    ? (isGame ? "You aren't playing any games currently. Mark backlog items as Currently Playing!" : "You aren't watching anything currently. Mark watchlist items as Currently Watching!")
-                    : (isGame ? 'Track your played games by marking Playlist items as Played!' : 'Track your watched movies by marking watchlist items as Seen!')}
+                      ? (isGame ? "You aren't playing any games currently. Mark backlog items as Currently Playing!" : "You aren't watching anything currently. Mark watchlist items as Currently Watching!")
+                      : (isGame ? 'Track your played games by marking Playlist items as Played!' : 'Track your watched movies by marking watchlist items as Seen!')}
                 </p>
                 <button
                   onClick={() => setActiveTab('discover')}
@@ -3082,23 +3513,21 @@ export default function PopcornDashboard() {
                         <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5 items-center max-w-md shadow-inner">
                           <button
                             onClick={() => handleUpdateStatus('watchlist')}
-                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${
-                              !selectedEntry.is_seen && !selectedEntry.is_played && !(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${!selectedEntry.is_seen && !selectedEntry.is_played && !(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
                                 ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
                                 : 'text-slate-400 hover:text-slate-200'
-                            }`}
+                              }`}
                           >
                             <Bookmark className="w-3.5 h-3.5" />
                             <span>{isGame ? 'Backlog' : 'Watchlist'}</span>
                           </button>
-                          
+
                           <button
                             onClick={() => handleUpdateStatus('watching')}
-                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${
-                              isGame ? selectedEntry.is_playing : selectedEntry.is_watching
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame ? selectedEntry.is_playing : selectedEntry.is_watching
                                 ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
                                 : 'text-slate-400 hover:text-slate-200'
-                            }`}
+                              }`}
                           >
                             {isGame ? <Gamepad className="w-3.5 h-3.5" /> : <Tv className="w-3.5 h-3.5" />}
                             <span>{isGame ? 'Playing' : 'Watching'}</span>
@@ -3106,11 +3535,10 @@ export default function PopcornDashboard() {
 
                           <button
                             onClick={() => handleUpdateStatus('seen')}
-                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${
-                              isGame ? selectedEntry.is_played : selectedEntry.is_seen
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame ? selectedEntry.is_played : selectedEntry.is_seen
                                 ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
                                 : 'text-slate-400 hover:text-slate-200'
-                            }`}
+                              }`}
                           >
                             <Trophy className="w-3.5 h-3.5" />
                             <span>{isGame ? 'Played' : 'Seen'}</span>
@@ -3136,11 +3564,10 @@ export default function PopcornDashboard() {
                                   key={group.id}
                                   type="button"
                                   onClick={() => handleToggleGroup(group)}
-                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${
-                                    isMember
+                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${isMember
                                       ? (isGame ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-md' : 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-md')
                                       : 'bg-slate-950/60 border-white/5 text-slate-400 hover:border-slate-800'
-                                  }`}
+                                    }`}
                                 >
                                   {isMember ? '✓ ' : '+ '}
                                   {group.name}
@@ -3196,7 +3623,7 @@ export default function PopcornDashboard() {
                         >
                           <div className="aspect-[2/3] bg-slate-900 rounded-lg overflow-hidden relative mb-2">
                             {item.poster_url ? (
-                            <img src={item.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={item.title} />
+                              <img src={item.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={item.title} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 {isGame ? <Gamepad className="w-5 h-5 text-slate-700" /> : <Film className="w-5 h-5 text-slate-700" />}
@@ -3217,10 +3644,10 @@ export default function PopcornDashboard() {
                   )}
                 </div>
               </div>
+            </div>
           </div>
-        </div>
-      )
-    })()}
+        )
+      })()}
 
       {/* ADD / EDIT MODAL */}
       {showModal && (
@@ -3591,9 +4018,9 @@ export default function PopcornDashboard() {
       {isTransitioning && (
         <div className={`screen-transition-overlay to-${transitionTarget}`}>
           {transitionTarget === 'gamecorn' && <div className="crt-scanlines crt-flicker" />}
-          
+
           <div className="relative w-72 h-72 flex flex-col items-center justify-center">
-            
+
             {/* Popcorn transition: Pop exploding kernels */}
             {transitionTarget === 'popcorn' && (
               <>
@@ -3618,12 +4045,12 @@ export default function PopcornDashboard() {
                     />
                   );
                 })}
-                
+
                 <div className="transition-bucket flex flex-col items-center z-20">
                   <div className="w-28 h-28 bg-gradient-to-b from-red-600 to-red-800 rounded-2xl flex items-center justify-center border-4 border-yellow-400 shadow-[0_0_30px_rgba(239,68,68,0.6)]">
                     <PopcornIcon className="w-16 h-16 text-yellow-300 fill-yellow-200 animate-pulse" />
                   </div>
-                  
+
                   <div className="mt-8 flex flex-col items-center gap-1.5 text-center">
                     <span className="text-white text-lg font-black tracking-widest uppercase animate-pulse drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
                       CINEMA SHOWTIME
@@ -3642,7 +4069,7 @@ export default function PopcornDashboard() {
                 <div className="transition-gamepad w-28 h-28 rounded-full border-4 border-emerald-500/80 bg-slate-950/90 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]">
                   <Gamepad className="w-16 h-16 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
                 </div>
-                
+
                 <div className="mt-8 flex flex-col items-start font-mono gap-1 text-emerald-450 bg-black/60 p-4 border border-emerald-500/20 rounded-xl min-w-[240px] text-xs">
                   <div className="terminal-line terminal-line-1 flex items-center gap-1.5">
                     <span className="text-cyan-400">&gt;</span> SYSTEM BOOT...
@@ -3659,7 +4086,7 @@ export default function PopcornDashboard() {
                 </div>
               </div>
             )}
-            
+
           </div>
         </div>
       )}
@@ -3675,7 +4102,7 @@ export default function PopcornDashboard() {
                   {isGame ? 'GameCorn AI' : 'Popcorn AI'}
                 </span>
               </div>
-              <button 
+              <button
                 onClick={() => setChatOpen(false)}
                 className="p-1 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-colors"
               >
@@ -3686,19 +4113,19 @@ export default function PopcornDashboard() {
             {/* Messages */}
             <div className="chat-messages-area">
               {chatMessages.map((msg, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className={`chat-message-bubble ${msg.role} ${isGame ? 'gamecorn' : ''}`}
                 >
                   {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
-                  
+
                   {/* Recommendations Cards rendered underneath */}
                   {msg.role === 'assistant' && msg.recommendations && msg.recommendations.length > 0 && (
                     <div className="chat-recommendations-list no-scrollbar">
                       {msg.recommendations.map((rec, recIdx) => {
                         const inWatchlist = isAlreadyInWatchlist(rec.title)
                         return (
-                          <div 
+                          <div
                             key={recIdx}
                             className="flex-shrink-0 w-[115px] bg-slate-950/80 border border-white/5 rounded-xl overflow-hidden flex flex-col justify-between"
                           >
@@ -3717,7 +4144,7 @@ export default function PopcornDashboard() {
                               </div>
                             </div>
                             <div className="p-1.5 flex-1 flex flex-col justify-between min-h-0">
-                              <h5 
+                              <h5
                                 className={`text-[9px] font-black text-slate-200 line-clamp-1 leading-tight cursor-pointer hover:${textPrimaryColor} transition-colors`}
                                 title={rec.title}
                                 onClick={() => handleCardClick(rec)}
@@ -3727,11 +4154,10 @@ export default function PopcornDashboard() {
                               <button
                                 onClick={() => !inWatchlist && handleAddToWatchlist(rec)}
                                 disabled={inWatchlist}
-                                className={`w-full mt-1.5 py-1 rounded-lg text-[7px] font-black flex items-center justify-center gap-0.5 transition-all ${
-                                  inWatchlist 
+                                className={`w-full mt-1.5 py-1 rounded-lg text-[7px] font-black flex items-center justify-center gap-0.5 transition-all ${inWatchlist
                                     ? 'bg-green-500/10 text-green-500 border border-green-500/20'
                                     : (isGame ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white')
-                                }`}
+                                  }`}
                               >
                                 {inWatchlist ? <Check className="w-2 h-2" /> : <Plus className="w-2 h-2" />}
                                 <span>{inWatchlist ? 'Added' : 'Add'}</span>
@@ -3744,7 +4170,7 @@ export default function PopcornDashboard() {
                   )}
                 </div>
               ))}
-              
+
               {chatLoading && (
                 <div className="chat-message-bubble assistant">
                   <div className="typing-indicator">
@@ -3767,7 +4193,7 @@ export default function PopcornDashboard() {
                 className={`chat-input-field ${isGame ? 'gamecorn' : ''}`}
                 disabled={chatLoading}
               />
-              <button 
+              <button
                 type="submit"
                 disabled={!chatInput.trim() || chatLoading}
                 className={`p-2 rounded-xl text-white transition-all ${!chatInput.trim() || chatLoading ? 'opacity-40 bg-slate-800' : bgPrimaryColor}`}

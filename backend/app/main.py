@@ -31,6 +31,12 @@ def run_db_migrations():
             conn.commit()
             print("Successfully added column is_watching to popcorn_entries table")
 
+    if "rank" not in popcorn_cols:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE popcorn_entries ADD COLUMN rank INTEGER NULL"))
+            conn.commit()
+            print("Successfully added column rank to popcorn_entries table")
+
     # Migrate game_entries
     game_cols = [c["name"] for c in inspector.get_columns("game_entries")]
     if "is_playing" not in game_cols:
@@ -38,6 +44,12 @@ def run_db_migrations():
             conn.execute(text("ALTER TABLE game_entries ADD COLUMN is_playing BOOLEAN DEFAULT 0"))
             conn.commit()
             print("Successfully added column is_playing to game_entries table")
+
+    if "rank" not in game_cols:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE game_entries ADD COLUMN rank INTEGER NULL"))
+            conn.commit()
+            print("Successfully added column rank to game_entries table")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
