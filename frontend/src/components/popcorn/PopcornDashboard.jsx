@@ -6,7 +6,8 @@ import {
   Plus, Trash2, Edit3, Loader2, Image as ImageIcon, Search,
   Popcorn as PopcornIcon, ExternalLink, ChevronRight, X,
   TrendingUp, Settings, Film, Tv, Star, Globe, Check, ChevronLeft, Sparkles,
-  Rocket, Bookmark, Gamepad2, Gamepad, Trophy, MessageSquare, Send
+  Rocket, Bookmark, Gamepad2, Gamepad, Trophy, MessageSquare, Send,
+  Sun, Moon
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import LazyRow from './LazyRow'
@@ -297,11 +298,605 @@ const renderMarkdown = (text) => {
   });
 };
 
+const StatsPanel = ({ entries, isGame, PopcornRating }) => {
+  const brandColorText = isGame ? 'text-emerald-400' : 'text-orange-500'
+  const brandBg = isGame ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-orange-500/10 border-orange-500/20'
+  const barColor = isGame ? 'bg-emerald-500' : 'bg-orange-500'
+
+  // Calculations for Stats
+  const totalCount = entries.length
+  const ratedEntries = entries.filter(e => e.my_rating !== null)
+  const avgRating = ratedEntries.length > 0
+    ? (ratedEntries.reduce((sum, e) => sum + e.my_rating, 0) / ratedEntries.length).toFixed(1)
+    : '0.0'
+    
+  // Statuses
+  const watchingCount = entries.filter(e => isGame ? e.is_playing : e.is_watching).length
+  const seenCount = entries.filter(e => isGame ? e.is_played : e.is_seen).length
+
+  // Category / Platform counts
+  const categoryCounts = {}
+  entries.forEach(e => {
+    const key = isGame ? (e.platform || 'Other') : e.category
+    categoryCounts[key] = (categoryCounts[key] || 0) + 1
+  })
+
+  // Genre counts
+  const genreCounts = {}
+  entries.forEach(e => {
+    if (e.genres) {
+      e.genres.split(', ').forEach(g => {
+        if (g) {
+          genreCounts[g] = (genreCounts[g] || 0) + 1
+        }
+      })
+    }
+  })
+  
+  // Sort genres
+  const topGenres = Object.entries(genreCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+
+  const categoryCountsList = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-300">
+      <div>
+        <h2 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+          <Trophy className={`w-5 h-5 ${brandColorText}`} />
+          <span>Library Insights & Analytics</span>
+        </h2>
+        <p className="text-slate-400 text-xs mt-0.5">
+          Real-time statistics and details for your {isGame ? 'gaming playlists' : 'entertainment lists'}.
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Total Tracked</span>
+          <div className="flex items-baseline gap-2 mt-4">
+            <span className="text-3xl font-black text-white">{totalCount}</span>
+            <span className="text-xs font-semibold text-slate-400">{isGame ? 'games' : 'titles'}</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-slate-950 mt-4 overflow-hidden">
+            <div className={`h-full ${barColor}`} style={{ width: '100%' }} />
+          </div>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            {isGame ? 'Currently Playing' : 'Currently Watching'}
+          </span>
+          <div className="flex items-baseline gap-2 mt-4">
+            <span className="text-3xl font-black text-white">{watchingCount}</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${isGame ? 'bg-emerald-500' : 'bg-orange-500'} animate-pulse inline-block align-middle ml-1`} />
+          </div>
+          <span className="text-[10px] text-slate-400 mt-4">Active engagement</span>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            {isGame ? 'Played & Vaulted' : 'Seen & Vaulted'}
+          </span>
+          <div className="flex items-baseline gap-2 mt-4">
+            <span className="text-3xl font-black text-white">{seenCount}</span>
+            <span className="text-xs font-semibold text-slate-400">completed</span>
+          </div>
+          <span className="text-[10px] text-slate-400 mt-4">
+            {totalCount > 0 ? ((seenCount / totalCount) * 100).toFixed(0) : 0}% completion rate
+          </span>
+        </div>
+
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Average Rating</span>
+          <div className="flex items-baseline gap-2 mt-4">
+            <span className="text-3xl font-black text-white">{avgRating}</span>
+            <Star className="w-5 h-5 fill-yellow-500 text-yellow-500 align-middle inline" />
+          </div>
+          <div className="mt-3 flex gap-1">
+            <PopcornRating rating={Number(avgRating)} />
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Genre Performance */}
+        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-wider text-white">Top Genres</h3>
+          {topGenres.length === 0 ? (
+            <p className="text-slate-500 text-xs italic py-6 text-center">Not enough data to calculate genres.</p>
+          ) : (
+            <div className="space-y-4">
+              {topGenres.map(([genre, count]) => {
+                const pct = totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0
+                return (
+                  <div key={genre} className="space-y-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-semibold text-slate-200">{genre}</span>
+                      <span className="text-slate-400 font-bold">{count} ({pct}%)</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden">
+                      <div className={`h-full ${barColor}`} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Type / Platform Distribution */}
+        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-wider text-white">
+            {isGame ? 'Platform Distribution' : 'Category Distribution'}
+          </h3>
+          {categoryCountsList.length === 0 ? (
+            <p className="text-slate-500 text-xs italic py-6 text-center">No categories to display.</p>
+          ) : (
+            <div className="space-y-3">
+              {categoryCountsList.map(([cat, count]) => {
+                const pct = totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0
+                return (
+                  <div key={cat} className="flex justify-between items-center p-3 bg-slate-950/40 border border-white/5 rounded-2xl hover:border-slate-800 transition-colors">
+                    <span className="text-xs font-bold text-slate-200">{cat}</span>
+                    <div className="flex items-center gap-3">
+                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${brandBg} ${brandColorText}`}>
+                        {count} {count === 1 ? (isGame ? 'game' : 'title') : (isGame ? 'games' : 'titles')}
+                      </span>
+                      <span className="text-xs text-slate-500 font-semibold">{pct}%</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const OnboardingModal = ({
+  authApi,
+  tmdbApi,
+  rawgApi,
+  LANGUAGES,
+  refreshUser,
+  fetchPersonalizedRecs,
+  fetchRecommendations,
+  fetchEntries,
+  setShowOnboarding,
+  setShowSaveCelebration
+}) => {
+  const [step, setStep] = useState(1)
+  
+  // Step 1: Languages selection
+  const [selectedLangs, setSelectedLangs] = useState([])
+  
+  // Step 2: Movies search & selection
+  const [movieQuery, setMovieQuery] = useState('')
+  const [movieResults, setMovieResults] = useState([])
+  const [movieLoading, setMovieLoading] = useState(false)
+  const [selectedMovies, setSelectedMovies] = useState([])
+  
+  // Step 3: Games search & selection
+  const [gameQuery, setGameQuery] = useState('')
+  const [gameResults, setGameResults] = useState([])
+  const [gameLoading, setGameLoading] = useState(false)
+  const [selectedGames, setSelectedGames] = useState([])
+  
+  const [isSubmittingOnboard, setIsSubmittingOnboard] = useState(false)
+
+  // Debounced TMDB search for movies onboarding
+  useEffect(() => {
+    if (step !== 2) return
+    const delayDebounce = setTimeout(async () => {
+      if (movieQuery.trim().length > 1) {
+        setMovieLoading(true)
+        try {
+          const res = await tmdbApi.search(movieQuery)
+          setMovieResults(res.slice(0, 5))
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setMovieLoading(false)
+        }
+      } else {
+        setMovieResults([])
+      }
+    }, 350)
+    return () => clearTimeout(delayDebounce)
+  }, [movieQuery, step])
+
+  // Debounced RAWG search for games onboarding
+  useEffect(() => {
+    if (step !== 3) return
+    const delayDebounce = setTimeout(async () => {
+      if (gameQuery.trim().length > 1) {
+        setGameLoading(true)
+        try {
+          const res = await rawgApi.search(gameQuery)
+          setGameResults(res.slice(0, 5))
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setGameLoading(false)
+        }
+      } else {
+        setGameResults([])
+      }
+    }, 350)
+    return () => clearTimeout(delayDebounce)
+  }, [gameQuery, step])
+
+  const handleToggleLang = (lang) => {
+    if (selectedLangs.includes(lang)) {
+      setSelectedLangs(prev => prev.filter(x => x !== lang))
+    } else {
+      if (selectedLangs.length >= 10) {
+        toast.error('You can select up to 10 preferred languages!')
+        return
+      }
+      setSelectedLangs(prev => [...prev, lang])
+    }
+  }
+
+  const handleSelectMovie = (movie) => {
+    if (selectedMovies.some(x => x.title === movie.title)) {
+      setSelectedMovies(prev => prev.filter(x => x.title !== movie.title))
+    } else {
+      if (selectedMovies.length >= 10) {
+        toast.error('You can select up to 10 favorite movies/shows!')
+        return
+      }
+      const newItem = {
+        title: movie.title,
+        category: movie.category || 'Movie',
+        language: movie.language || 'English',
+        rating: movie.rating || 0.0,
+        synopsis: movie.synopsis || '',
+        genres: movie.genres || '',
+        poster_url: movie.poster_url || '',
+        my_rating: 5.0,  // Defaults to 5-star
+        is_seen: true,
+        is_watching: false,
+        reasons_for_liking: 'Selected during onboarding profile setup.',
+        group_ids: []
+      }
+      setSelectedMovies(prev => [...prev, newItem])
+    }
+  }
+
+  const handleSelectGame = (game) => {
+    if (selectedGames.some(x => x.title === game.title)) {
+      setSelectedGames(prev => prev.filter(x => x.title !== game.title))
+    } else {
+      if (selectedGames.length >= 10) {
+        toast.error('You can select up to 10 favorite games!')
+        return
+      }
+      const newItem = {
+        title: game.title,
+        platform: game.platform || 'PC',
+        rating: game.rating || 0.0,
+        synopsis: game.synopsis || '',
+        genres: game.genres || '',
+        poster_url: game.poster_url || '',
+        my_rating: 5.0,  // Defaults to 5-star
+        is_played: true,
+        is_playing: false,
+        reasons_for_liking: 'Selected during onboarding profile setup.',
+        group_ids: []
+      }
+      setSelectedGames(prev => [...prev, newItem])
+    }
+  }
+
+  const handleSubmitOnboard = async () => {
+    setIsSubmittingOnboard(true)
+    try {
+      await authApi.onboard({
+        preferred_languages: selectedLangs,
+        movies: selectedMovies,
+        games: selectedGames
+      })
+      
+      setShowSaveCelebration(true)
+      setTimeout(() => setShowSaveCelebration(false), 2500)
+      
+      toast.success('Onboarding complete! Loading your custom dashboard...')
+      
+      await refreshUser()
+      fetchPersonalizedRecs()
+      fetchRecommendations()
+      fetchEntries()
+      
+      setShowOnboarding(false)
+    } catch (err) {
+      toast.error('Onboarding failed. Please try again.')
+    } finally {
+      setIsSubmittingOnboard(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md select-none">
+      <div className="relative bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+        
+        {/* Header */}
+        <div className="p-6 border-b border-white/5 bg-slate-950/40 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Step {step} of 3</span>
+            <h2 className="text-lg font-black text-white uppercase tracking-wider mt-1">
+              {step === 1 && "Select Preferred Languages"}
+              {step === 2 && "Pick Liked Movies, Shows & Anime"}
+              {step === 3 && "Pick Liked Games"}
+            </h2>
+          </div>
+          <div className="flex gap-1">
+            {[1, 2, 3].map(i => (
+              <div key={i} className={`w-6 h-1.5 rounded-full transition-all duration-300 ${i <= step ? 'bg-orange-500' : 'bg-slate-800'}`} />
+            ))}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
+          {step === 1 && (
+            <div className="space-y-4">
+              <p className="text-xs text-slate-400">
+                Select the languages you prefer to watch content in. We will use this to fine-tune your personalized recommendations. (Pick up to 10)
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2">
+                {LANGUAGES.map(lang => {
+                  const active = selectedLangs.includes(lang)
+                  return (
+                    <button
+                      key={lang}
+                      onClick={() => handleToggleLang(lang)}
+                      className={`p-3 rounded-2xl border text-xs font-bold transition-all text-center flex items-center justify-between ${
+                        active
+                          ? 'bg-orange-500/10 border-orange-500 text-orange-400 shadow-[0_0_12px_rgba(249,115,22,0.15)]'
+                          : 'bg-slate-950/50 border-white/5 text-slate-400 hover:border-slate-800 hover:text-slate-200'
+                      }`}
+                    >
+                      <span>{lang}</span>
+                      {active && <Check className="w-3.5 h-3.5 text-orange-400" />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <p className="text-xs text-slate-400">
+                Search and add movies, TV shows, or anime series you have watched and liked. This seeds your recommendation engine. (Pick up to 10)
+              </p>
+              
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Search globally (e.g. Inception, Breaking Bad, Naruto)..."
+                  value={movieQuery}
+                  onChange={(e) => setMovieQuery(e.target.value)}
+                  className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
+                />
+              </div>
+
+              {movieLoading && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                </div>
+              )}
+
+              {/* Search Results list */}
+              {!movieLoading && movieResults.length > 0 && (
+                <div className="bg-slate-950/50 border border-slate-850 rounded-2xl overflow-hidden divide-y divide-white/5">
+                  {movieResults.map((movie) => {
+                    const alreadySelected = selectedMovies.some(x => x.title === movie.title)
+                    return (
+                      <div key={movie.title} className="p-3 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {movie.poster_url ? (
+                            <img src={movie.poster_url} className="w-9 h-12 object-cover rounded-md shrink-0" alt="" />
+                          ) : (
+                            <div className="w-9 h-12 bg-slate-900 rounded-md shrink-0 flex items-center justify-center">
+                              <Film className="w-4 h-4 text-slate-700" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{movie.title}</p>
+                            <p className="text-[10px] text-slate-500">{movie.category} • {movie.language} • {movie.genres}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleSelectMovie(movie)}
+                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${
+                            alreadySelected
+                              ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
+                              : 'bg-orange-600 hover:bg-orange-500 text-white'
+                          }`}
+                        >
+                          {alreadySelected ? 'Remove' : 'Like'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Selected Items section */}
+              {selectedMovies.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Liked Movies ({selectedMovies.length}/10)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMovies.map(movie => (
+                      <div key={movie.title} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-full text-xs font-semibold">
+                        <span className="truncate max-w-[150px]">{movie.title}</span>
+                        <button onClick={() => setSelectedMovies(prev => prev.filter(x => x.title !== movie.title))} className="hover:text-white rounded-full p-0.5">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <p className="text-xs text-slate-400">
+                Search and add games you have played and loved. This seeds your recommendation engine. (Pick up to 10)
+              </p>
+              
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Search globally (e.g. Elden Ring, GTA V, Witcher 3)..."
+                  value={gameQuery}
+                  onChange={(e) => setGameQuery(e.target.value)}
+                  className="w-full bg-slate-950/60 border border-slate-850 focus:border-emerald-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
+                />
+              </div>
+
+              {gameLoading && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+                </div>
+              )}
+
+              {/* Search Results list */}
+              {!gameLoading && gameResults.length > 0 && (
+                <div className="bg-slate-950/50 border border-slate-850 rounded-2xl overflow-hidden divide-y divide-white/5">
+                  {gameResults.map((game) => {
+                    const alreadySelected = selectedGames.some(x => x.title === game.title)
+                    return (
+                      <div key={game.title} className="p-3 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {game.poster_url ? (
+                            <img src={game.poster_url} className="w-9 h-12 object-cover rounded-md shrink-0" alt="" />
+                          ) : (
+                            <div className="w-9 h-12 bg-slate-900 rounded-md shrink-0 flex items-center justify-center">
+                              <Gamepad className="w-4 h-4 text-slate-700" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{game.title}</p>
+                            <p className="text-[10px] text-slate-500">{game.platform} • {game.genres}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleSelectGame(game)}
+                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${
+                            alreadySelected
+                              ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
+                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                          }`}
+                        >
+                          {alreadySelected ? 'Remove' : 'Like'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Selected Items section */}
+              {selectedGames.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Liked Games ({selectedGames.length}/10)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGames.map(game => (
+                      <div key={game.title} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-semibold">
+                        <span className="truncate max-w-[150px]">{game.title}</span>
+                        <button onClick={() => setSelectedGames(prev => prev.filter(x => x.title !== game.title))} className="hover:text-white rounded-full p-0.5">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-white/5 bg-slate-950/40 flex justify-between items-center">
+          <button
+            onClick={() => step > 1 && setStep(prev => prev - 1)}
+            disabled={step === 1}
+            className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-40 disabled:pointer-events-none"
+          >
+            Back
+          </button>
+          {step < 3 ? (
+            <button
+              onClick={() => {
+                if (step === 1 && selectedLangs.length === 0) {
+                  toast.error('Please select at least one language!')
+                  return
+                }
+                setStep(prev => prev + 1)
+              }}
+              className="px-5 py-2 text-white font-bold rounded-xl text-xs bg-orange-600 hover:bg-orange-500 transition-colors"
+            >
+              Next Step
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmitOnboard}
+              disabled={isSubmittingOnboard}
+              className="px-5 py-2 text-white font-bold rounded-xl text-xs bg-orange-600 hover:bg-orange-500 transition-colors flex items-center gap-1.5"
+            >
+              {isSubmittingOnboard ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Seeding recommendations...</span>
+                </>
+              ) : (
+                <span>Complete Setup</span>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function PopcornDashboard() {
-  const { logout, user } = useAuth()
+  const { logout, user, refreshUser } = useAuth()
   const navigate = useNavigate()
 
   const [appMode, setAppMode] = useState(() => localStorage.getItem('popcorn_app_mode') || 'popcorn')
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  useEffect(() => {
+    if (user && user.onboarded === false) {
+      setShowOnboarding(true)
+    }
+  }, [user])
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('theme', nextTheme)
+    if (nextTheme === 'light') {
+      document.documentElement.classList.remove('dark')
+    } else {
+      document.documentElement.classList.add('dark')
+    }
+  }
 
   // AI Chatbot State
   const [chatOpen, setChatOpen] = useState(false)
@@ -1454,6 +2049,14 @@ export default function PopcornDashboard() {
             </Link>
 
             <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl border border-white/5 bg-slate-950/40 hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            <button
               onClick={() => navigate('/settings')}
               className="p-2 rounded-xl border border-white/5 bg-slate-950/40 hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
               title="Profile Settings"
@@ -1546,9 +2149,21 @@ export default function PopcornDashboard() {
               {entries.filter(e => isGame ? e.is_played : e.is_seen).length}
             </span>
           </button>
+          <button
+            onClick={() => setActiveTab('stats')}
+            className={`pb-4 px-2 text-xs font-black transition-all border-b-2 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${activeTab === 'stats'
+              ? activeBorderClass
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+          >
+            <Trophy className="w-4 h-4 flex-shrink-0" />
+            <span>Stats</span>
+          </button>
         </div>
 
-        {['watchlist', 'watching', 'seen'].includes(activeTab) ? (
+        {activeTab === 'stats' ? (
+          <StatsPanel entries={entries} isGame={isGame} PopcornRating={PopcornRating} />
+        ) : ['watchlist', 'watching', 'seen'].includes(activeTab) ? (
           <>
             {/* Filters Panel */}
             <div className="flex flex-col gap-4 mb-8 bg-slate-900/40 border border-slate-800/80 p-5 rounded-3xl backdrop-blur-md">
@@ -3261,6 +3876,20 @@ export default function PopcornDashboard() {
             </div>
           </div>
         </div>
+      )}
+      {showOnboarding && (
+        <OnboardingModal
+          authApi={authApi}
+          tmdbApi={tmdbApi}
+          rawgApi={rawgApi}
+          LANGUAGES={LANGUAGES}
+          refreshUser={refreshUser}
+          fetchPersonalizedRecs={fetchPersonalizedRecs}
+          fetchRecommendations={fetchRecommendations}
+          fetchEntries={fetchEntries}
+          setShowOnboarding={setShowOnboarding}
+          setShowSaveCelebration={setShowSaveCelebration}
+        />
       )}
     </div>
   )

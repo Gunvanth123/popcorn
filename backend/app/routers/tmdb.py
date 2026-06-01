@@ -317,6 +317,7 @@ async def discover_tmdb(
 
 # Genre name to ID mapping helper
 GENRE_NAME_TO_ID = {v.lower(): k for k, v in GENRE_MAP.items()}
+LANG_NAME_TO_CODE = {v.lower(): k for k, v in LANGUAGES.items()}
 
 
 @router.get("/similar")
@@ -423,7 +424,21 @@ async def get_personalized_recommendations(
                 g_clean = g.strip().lower()
                 genre_counts[g_clean] = genre_counts.get(g_clean, 0) + weight
 
-    user_profile = "\n".join(history_items) if history_items else "User watch history is currently empty. Recommending popular trending movies."
+    # Parse preferred languages
+    pref_langs = []
+    if getattr(current_user, "preferred_languages", None):
+        pref_langs = [l.strip() for l in current_user.preferred_languages.split(",") if l.strip()]
+
+    # Format user profile for the AI recommender
+    profile_parts = []
+    if pref_langs:
+        profile_parts.append(f"Preferred Languages: {', '.join(pref_langs)}")
+    if history_items:
+        profile_parts.append("User library:\n" + "\n".join(history_items))
+    else:
+        profile_parts.append("User watch history is currently empty. Recommending popular trending movies.")
+        
+    user_profile = "\n\n".join(profile_parts)
 
     # Sort genres by frequency
     sorted_genres = sorted(genre_counts.items(), key=lambda x: x[1], reverse=True)
@@ -453,6 +468,23 @@ async def get_personalized_recommendations(
                 "page": 2
             }))
         
+        # Add tasks for preferred languages
+        for lang in pref_langs[:3]:  # Limit to top 3 preferred languages to keep requests efficient
+            code = lang.lower() if len(lang) == 2 else LANG_NAME_TO_CODE.get(lang.lower())
+            if code:
+                tasks.append(fetch_tmdb_list(client, "https://api.themoviedb.org/3/discover/movie", {
+                    "api_key": api_key,
+                    "with_original_language": code,
+                    "sort_by": "popularity.desc",
+                    "page": 1
+                }))
+                tasks.append(fetch_tmdb_list(client, "https://api.themoviedb.org/3/discover/tv", {
+                    "api_key": api_key,
+                    "with_original_language": code,
+                    "sort_by": "popularity.desc",
+                    "page": 1
+                }, default_media_type="tv"))
+
         # Always add trending movies to candidate recommendations pool
         tasks.append(fetch_tmdb_list(client, "https://api.themoviedb.org/3/trending/all/week", {
             "api_key": api_key,

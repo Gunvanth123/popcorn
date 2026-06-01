@@ -9,6 +9,20 @@ from app.routers import auth, popcorn, tmdb, games, rawg, ai, groups
 def run_db_migrations():
     inspector = inspect(engine)
     
+    # Migrate users
+    user_cols = [c["name"] for c in inspector.get_columns("users")]
+    if "preferred_languages" not in user_cols:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN preferred_languages VARCHAR(500) NULL"))
+            conn.commit()
+            print("Successfully added column preferred_languages to users table")
+            
+    if "onboarded" not in user_cols:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN onboarded BOOLEAN DEFAULT 0"))
+            conn.commit()
+            print("Successfully added column onboarded to users table")
+
     # Migrate popcorn_entries
     popcorn_cols = [c["name"] for c in inspector.get_columns("popcorn_entries")]
     if "is_watching" not in popcorn_cols:

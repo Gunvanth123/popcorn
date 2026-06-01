@@ -25,6 +25,8 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    preferred_languages = Column(String(500), nullable=True)  # Comma-separated languages
+    onboarded = Column(Boolean, default=False, server_default="false")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     entries = relationship("PopcornEntry", back_populates="user", cascade="all, delete-orphan")

@@ -16,6 +16,8 @@ class UserOut(BaseModel):
     id: int
     name: str
     email: EmailStr
+    preferred_languages: Optional[str] = None
+    onboarded: bool = False
     created_at: datetime
 
     class Config:
@@ -147,3 +149,9 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     app_mode: str = "popcorn"  # 'popcorn' or 'gamecorn'
+
+# --- Onboarding Schema ---
+class OnboardingPayload(BaseModel):
+    preferred_languages: List[str]
+    movies: List[PopcornEntryCreate]
+    games: List[GameEntryCreate]

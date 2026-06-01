@@ -23,6 +23,7 @@ export const authApi = {
   register: (data) => api.post('/auth/register', data).then(r => r.data),
   login: (data) => api.post('/auth/login', data).then(r => r.data),
   getMe: () => api.get('/auth/me').then(r => r.data),
+  onboard: (data) => api.post('/auth/onboard', data).then(r => r.data),
 }
 
 export const popcornApi = {
