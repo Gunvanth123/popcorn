@@ -422,7 +422,7 @@ export default function GamesDashboard() {
           <h3 className="text-base font-black text-white uppercase tracking-wider">{title}</h3>
         </div>
         <div className="relative group/row">
-          <button onClick={() => scrollRow(rowId, 'left')} className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-violet-600 hover:border-violet-500 hover:scale-105 active:scale-95">
+          <button onClick={() => scrollRow(rowId, 'left')} className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-violet-600 hover:border-violet-500 hover:scale-105 active:scale-95">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div id={rowId} className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row" style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}>
@@ -435,7 +435,7 @@ export default function GamesDashboard() {
                   className="movie-3d-card-container min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] flex-shrink-0"
                 >
                   <div
-                    className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
+                    className="movie-3d-card bg-ink/60 border border-white/10/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
                     onMouseMove={handleCardMouseMove}
                     onMouseEnter={handleCardMouseEnter}
                     onMouseLeave={handleCardMouseLeave}
@@ -444,7 +444,7 @@ export default function GamesDashboard() {
                     {showRank && (
                       <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-violet-600/90 text-white flex items-center justify-center font-black text-xs shadow-md z-10">{idx + 1}</div>
                     )}
-                    <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
+                    <div className="aspect-[2/3] bg-midnight relative overflow-hidden shrink-0 rounded-t-2xl">
                       {item.poster_url ? (
                         <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                       ) : (
@@ -453,12 +453,12 @@ export default function GamesDashboard() {
                           <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-violet-300 flex items-center gap-0.5">
+                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-midnight/80 border border-white/10 text-[9px] font-black text-violet-300 flex items-center gap-0.5">
                         <Star className="w-2.5 h-2.5 fill-violet-400 text-violet-400" />
                         <span>{Number(item.rating || 0).toFixed(1)}</span>
                       </div>
                       {item.platform && (
-                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300 truncate max-w-[80%]">{item.platform.split(',')[0]}</div>
+                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-midnight/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-200 truncate max-w-[80%]">{item.platform.split(',')[0]}</div>
                       )}
                     </div>
                     <div className="p-3 flex-1 flex flex-col justify-between min-h-0">
@@ -480,7 +480,7 @@ export default function GamesDashboard() {
               )
             })}
           </div>
-          <button onClick={() => scrollRow(rowId, 'right')} className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-violet-600 hover:border-violet-500 hover:scale-105 active:scale-95">
+          <button onClick={() => scrollRow(rowId, 'right')} className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-violet-600 hover:border-violet-500 hover:scale-105 active:scale-95">
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
@@ -495,7 +495,7 @@ export default function GamesDashboard() {
 
       {/* Popping Loader Overlay */}
       {showPoppingLoader && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/85 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-midnight/85 backdrop-blur-sm">
           <div className="relative flex flex-col items-center gap-6">
             <div className="relative w-24 h-24">
               {[...Array(12)].map((_, i) => {
@@ -569,7 +569,7 @@ export default function GamesDashboard() {
             {tab.icon}
             <span>{tab.label}</span>
             {tab.count !== undefined && (
-              <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1">{tab.count}</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1">{tab.count}</span>
             )}
           </button>
         ))}
@@ -579,7 +579,7 @@ export default function GamesDashboard() {
       {activeTab === 'discover' && (
         <div className="space-y-12">
           {/* Global Search */}
-          <div className="bg-slate-900/40 border border-slate-800/80 p-5 rounded-3xl backdrop-blur-md space-y-4">
+          <div className="bg-ink/40 border border-white/10/80 p-5 rounded-3xl backdrop-blur-md space-y-4">
             <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
               <Search className="w-4 h-4 text-violet-400" />
               Search Games & Add to Library
@@ -591,11 +591,11 @@ export default function GamesDashboard() {
                 value={globalSearch}
                 onChange={e => setGlobalSearch(e.target.value)}
                 placeholder="Search by game name..."
-                className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-500"
+                className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-500"
               />
               {isSearching && <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400 animate-spin" />}
               {globalSearch && !isSearching && (
-                <button onClick={() => { setGlobalSearch(''); setGlobalResults([]) }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase">Clear</button>
+                <button onClick={() => { setGlobalSearch(''); setGlobalResults([]) }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-200 font-bold uppercase">Clear</button>
               )}
             </div>
 
@@ -607,7 +607,7 @@ export default function GamesDashboard() {
                     <div
                       key={idx}
                       onClick={() => handleGameClick(item)}
-                      className="flex items-center gap-3 p-3 bg-slate-950/60 border border-white/5 hover:border-violet-500/40 rounded-2xl cursor-pointer transition-all group"
+                      className="flex items-center gap-3 p-3 bg-midnight/60 border border-white/5 hover:border-violet-500/40 rounded-2xl cursor-pointer transition-all group"
                     >
                       {item.poster_url ? (
                         <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-10 h-14 object-cover rounded-lg shrink-0" />
@@ -649,7 +649,7 @@ export default function GamesDashboard() {
               {renderRow('🔥 Trending Games', rawgRecs.trending_games, <Zap className="w-5 h-5 text-violet-400" />, true)}
               {renderRow('⚔️ Top RPGs', rawgRecs.top_rpgs, <Star className="w-5 h-5 text-violet-400" />)}
               {renderRow('🎮 Nintendo Switch Hits', rawgRecs.switch_hits, <Monitor className="w-5 h-5 text-violet-400" />)}
-              {renderRow('💥 Action Hits', rawgRecs.action_hits, <Zap className="w-5 h-5 text-orange-400" />)}
+              {renderRow('💥 Action Hits', rawgRecs.action_hits, <Zap className="w-5 h-5 text-indigo-300" />)}
             </div>
           ) : null}
         </div>
@@ -659,7 +659,7 @@ export default function GamesDashboard() {
       {(activeTab === 'backlog' || activeTab === 'played') && (
         <>
           {/* Filters */}
-          <div className="flex flex-col gap-4 mb-8 bg-slate-900/40 border border-slate-800/80 p-5 rounded-3xl backdrop-blur-md">
+          <div className="flex flex-col gap-4 mb-8 bg-ink/40 border border-white/10/80 p-5 rounded-3xl backdrop-blur-md">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -667,23 +667,23 @@ export default function GamesDashboard() {
                 value={dashSearch}
                 onChange={e => setDashSearch(e.target.value)}
                 placeholder="Search your game library..."
-                className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl pl-11 pr-10 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
+                className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl pl-11 pr-10 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
               />
               {dashSearch && (
-                <button onClick={() => setDashSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase">Clear</button>
+                <button onClick={() => setDashSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-200 font-bold uppercase">Clear</button>
               )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Platform</label>
-                <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)} className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all">
+                <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)} className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all">
                   <option value="All">All Platforms</option>
                   {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Genre</label>
-                <select value={filterGenre} onChange={e => setFilterGenre(e.target.value)} className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all">
+                <select value={filterGenre} onChange={e => setFilterGenre(e.target.value)} className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all">
                   <option value="All">All Genres</option>
                   {GAME_GENRES.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
@@ -698,9 +698,9 @@ export default function GamesDashboard() {
               <p className="text-slate-400 text-sm">Loading your library...</p>
             </div>
           ) : filteredEntries.length === 0 ? (
-            <div className="text-center py-24 bg-slate-900/30 rounded-3xl border border-dashed border-slate-800 p-8">
+            <div className="text-center py-24 bg-ink/30 rounded-3xl border border-dashed border-white/10 p-8">
               <Gamepad2 className="w-12 h-12 mx-auto text-slate-700 opacity-40 mb-4" />
-              <h3 className="text-lg font-bold text-slate-300">{activeTab === 'backlog' ? 'Your Backlog is empty' : 'No played games yet'}</h3>
+              <h3 className="text-lg font-bold text-slate-200">{activeTab === 'backlog' ? 'Your Backlog is empty' : 'No played games yet'}</h3>
               <p className="text-slate-500 text-sm mt-2">{activeTab === 'backlog' ? 'Discover games and add them to your backlog!' : 'Mark games as played to see them here.'}</p>
             </div>
           ) : (
@@ -712,13 +712,13 @@ export default function GamesDashboard() {
                   className="movie-3d-card-container cursor-pointer"
                 >
                   <div
-                    className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col h-full relative"
+                    className="movie-3d-card bg-ink/60 border border-white/10/80 rounded-2xl overflow-hidden flex flex-col h-full relative"
                     onMouseMove={handleCardMouseMove}
                     onMouseEnter={handleCardMouseEnter}
                     onMouseLeave={handleCardMouseLeave}
                   >
                     <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
-                    <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
+                    <div className="aspect-[2/3] bg-midnight relative overflow-hidden shrink-0 rounded-t-2xl">
                       {entry.poster_url ? (
                         <img src={entry.poster_url} alt={entry.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                       ) : (
@@ -733,7 +733,7 @@ export default function GamesDashboard() {
                         </div>
                       )}
                       {entry.my_rating && (
-                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/70 border border-violet-500/30 text-[9px] font-black text-violet-300 backdrop-blur-md">
+                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-midnight/70 border border-violet-500/30 text-[9px] font-black text-violet-300 backdrop-blur-md">
                           {Number(entry.my_rating).toFixed(1)}
                         </div>
                       )}
@@ -760,11 +760,11 @@ export default function GamesDashboard() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-10">
-              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-4 py-2 rounded-xl border border-white/5 bg-slate-950/40 text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all disabled:opacity-30 text-xs font-bold">
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-4 py-2 rounded-xl border border-white/5 bg-midnight/40 text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all disabled:opacity-30 text-xs font-bold">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="text-xs text-slate-400 font-bold px-4">Page {currentPage} of {totalPages}</span>
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-4 py-2 rounded-xl border border-white/5 bg-slate-950/40 text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all disabled:opacity-30 text-xs font-bold">
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-4 py-2 rounded-xl border border-white/5 bg-midnight/40 text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all disabled:opacity-30 text-xs font-bold">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -774,17 +774,17 @@ export default function GamesDashboard() {
 
       {/* ─── Review / View Modal ─────────────────────────────── */}
       {showReviewModal && selectedGame && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-midnight/80 backdrop-blur-md">
+          <div className="bg-ink border border-white/10 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
             {/* Close */}
-            <button onClick={() => setShowReviewModal(false)} className="absolute top-4 right-4 p-2 rounded-xl border border-white/5 bg-slate-950/60 text-slate-400 hover:text-white transition-colors z-10">
+            <button onClick={() => setShowReviewModal(false)} className="absolute top-4 right-4 p-2 rounded-xl border border-white/5 bg-midnight/60 text-slate-400 hover:text-white transition-colors z-10">
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex flex-col sm:flex-row gap-6 p-6">
               {/* Poster */}
               <div className="shrink-0">
-                <div className="w-36 h-52 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-xl">
+                <div className="w-36 h-52 rounded-2xl overflow-hidden bg-midnight border border-white/10 shadow-xl">
                   {selectedGame.poster_url ? (
                     <img src={selectedGame.poster_url} alt={selectedGame.title} className="w-full h-full object-cover" />
                   ) : (
@@ -828,7 +828,7 @@ export default function GamesDashboard() {
                 {selectedGame.tags && (
                   <div className="flex flex-wrap gap-1.5">
                     {selectedGame.tags.split(', ').filter(Boolean).map(t => (
-                      <span key={t} className="px-2 py-0.5 rounded-lg bg-slate-800/60 border border-slate-700 text-slate-300 text-[10px] font-bold">{t}</span>
+                      <span key={t} className="px-2 py-0.5 rounded-lg bg-slate-800/60 border border-white/10 text-slate-200 text-[10px] font-bold">{t}</span>
                     ))}
                   </div>
                 )}
@@ -877,7 +877,7 @@ export default function GamesDashboard() {
 
             {/* Review Form */}
             {showReviewForm && (
-              <div className="border-t border-slate-800 px-6 pb-6 space-y-5 pt-5">
+              <div className="border-t border-white/10 px-6 pb-6 space-y-5 pt-5">
                 <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-violet-400" />
                   Your Review
@@ -904,7 +904,7 @@ export default function GamesDashboard() {
                         key={tag}
                         type="button"
                         onClick={() => setReviewTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${reviewTags.includes(tag) ? 'bg-violet-600/30 border-violet-500/50 text-violet-200' : 'bg-slate-950/60 border-white/5 text-slate-400 hover:border-violet-500/30'}`}
+                        className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${reviewTags.includes(tag) ? 'bg-violet-600/30 border-violet-500/50 text-violet-200' : 'bg-midnight/60 border-white/5 text-slate-400 hover:border-violet-500/30'}`}
                       >
                         {tag}
                       </button>
@@ -921,7 +921,7 @@ export default function GamesDashboard() {
                     maxLength={300}
                     rows={3}
                     placeholder="What made this game special..."
-                    className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500 resize-none"
+                    className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500 resize-none"
                   />
                   <p className="text-right text-[10px] text-slate-500">{reviewComments.length}/300</p>
                 </div>
@@ -947,9 +947,9 @@ export default function GamesDashboard() {
 
       {/* ─── Add/Edit Manual Modal ──────────────────────────── */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl relative">
-            <button onClick={() => setShowAddModal(false)} className="absolute top-4 right-4 p-2 rounded-xl border border-white/5 bg-slate-950/60 text-slate-400 hover:text-white transition-colors z-10">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-midnight/80 backdrop-blur-md">
+          <div className="bg-ink border border-white/10 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button onClick={() => setShowAddModal(false)} className="absolute top-4 right-4 p-2 rounded-xl border border-white/5 bg-midnight/60 text-slate-400 hover:text-white transition-colors z-10">
               <X className="w-4 h-4" />
             </button>
             <div className="p-6">
@@ -957,11 +957,11 @@ export default function GamesDashboard() {
               <form onSubmit={handleAddSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Game Title *</label>
-                  <input value={addForm.title} onChange={e => setAddForm(p => ({ ...p, title: e.target.value }))} className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-500" placeholder="e.g. Elden Ring" required />
+                  <input value={addForm.title} onChange={e => setAddForm(p => ({ ...p, title: e.target.value }))} className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-500" placeholder="e.g. Elden Ring" required />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Platform</label>
-                  <select value={addForm.platform} onChange={e => setAddForm(p => ({ ...p, platform: e.target.value }))} className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all">
+                  <select value={addForm.platform} onChange={e => setAddForm(p => ({ ...p, platform: e.target.value }))} className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all">
                     {PLATFORMS.map(pl => <option key={pl} value={pl}>{pl}</option>)}
                   </select>
                 </div>
@@ -969,17 +969,17 @@ export default function GamesDashboard() {
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Genres</label>
                   <div className="flex flex-wrap gap-2">
                     {GAME_GENRES.slice(0, 10).map(g => (
-                      <button key={g} type="button" onClick={() => setAddForm(p => ({ ...p, genres: p.genres.includes(g) ? p.genres.filter(x => x !== g) : [...p.genres, g] }))} className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${addForm.genres.includes(g) ? 'bg-violet-600/30 border-violet-500/50 text-violet-200' : 'bg-slate-950/60 border-white/5 text-slate-400 hover:border-violet-500/30'}`}>{g}</button>
+                      <button key={g} type="button" onClick={() => setAddForm(p => ({ ...p, genres: p.genres.includes(g) ? p.genres.filter(x => x !== g) : [...p.genres, g] }))} className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${addForm.genres.includes(g) ? 'bg-violet-600/30 border-violet-500/50 text-violet-200' : 'bg-midnight/60 border-white/5 text-slate-400 hover:border-violet-500/30'}`}>{g}</button>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Poster URL</label>
-                  <input value={addForm.poster_url} onChange={e => setAddForm(p => ({ ...p, poster_url: e.target.value }))} className="w-full bg-slate-950/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-500" placeholder="https://..." />
+                  <input value={addForm.poster_url} onChange={e => setAddForm(p => ({ ...p, poster_url: e.target.value }))} className="w-full bg-midnight/60 border border-white/5 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-500" placeholder="https://..." />
                 </div>
                 <div className="flex items-center gap-3">
                   <input type="checkbox" id="isPlayed" checked={addForm.is_played} onChange={e => setAddForm(p => ({ ...p, is_played: e.target.checked }))} className="w-4 h-4 accent-violet-500" />
-                  <label htmlFor="isPlayed" className="text-sm text-slate-300 font-bold">Already Played</label>
+                  <label htmlFor="isPlayed" className="text-sm text-slate-200 font-bold">Already Played</label>
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-sm transition-all">Cancel</button>

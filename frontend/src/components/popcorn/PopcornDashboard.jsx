@@ -7,7 +7,7 @@ import {
   Popcorn as PopcornIcon, ExternalLink, ChevronRight, X,
   TrendingUp, Settings, Film, Tv, Star, Globe, Check, ChevronLeft, Sparkles,
   Rocket, Bookmark, Gamepad2, Gamepad, Trophy, MessageSquare, Send,
-  Crown
+  Crown, Folder, FolderHeart, FolderMinus, ArrowLeft
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import LazyRow from './LazyRow'
@@ -104,7 +104,7 @@ const PopcornRating = ({ rating, interactive = false, isGame = false, onChange =
             <Icon className="w-5 h-5 text-slate-700 opacity-30" />
             <div
               className={`absolute inset-0 overflow-hidden ${isGame
-                ? 'text-emerald-400 fill-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                ? 'text-cyan-300 fill-cyan-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]'
                 : 'text-yellow-500 fill-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]'
                 }`}
               style={{ width: `${fill * 100}%` }}
@@ -115,7 +115,7 @@ const PopcornRating = ({ rating, interactive = false, isGame = false, onChange =
         )
       })}
       {interactive && (
-        <span className={`text-xs font-bold ${isGame ? 'text-emerald-400' : 'text-yellow-500'} ml-2`}>
+        <span className={`text-xs font-bold ${isGame ? 'text-cyan-300' : 'text-yellow-500'} ml-2`}>
           {Number(rating).toFixed(1)}
         </span>
       )}
@@ -190,8 +190,8 @@ const PopcornSlider = ({ value, onChange, isGame = false }) => {
       >
         {/* Slider Track (Gradient matching ref UI) */}
         <div className={`absolute left-0 right-0 h-4 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] ${isGame
-          ? 'bg-gradient-to-r from-purple-950 via-violet-850 to-emerald-500'
-          : 'bg-gradient-to-r from-indigo-900 via-purple-650 to-orange-500'
+          ? 'bg-gradient-to-r from-purple-950 via-violet-850 to-cyan-500'
+          : 'bg-gradient-to-r from-indigo-900 via-purple-650 to-indigo-500'
           }`} />
 
         {/* Tick marks */}
@@ -218,8 +218,8 @@ const PopcornSlider = ({ value, onChange, isGame = false }) => {
         {/* Custom Glowing Thumb */}
         <div
           className={`absolute -translate-x-1/2 w-10 h-10 rounded-full border-2 border-white text-white flex items-center justify-center transition-transform duration-100 z-20 cursor-grab active:cursor-grabbing ${isGame
-            ? 'bg-gradient-to-br from-emerald-450 via-teal-500 to-violet-600 shadow-[0_0_22px_rgba(16,185,129,0.95),_0_4px_12px_rgba(0,0,0,0.5)]'
-            : 'bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 shadow-[0_0_22px_rgba(249,115,22,0.95),_0_4px_12px_rgba(0,0,0,0.5)]'
+            ? 'bg-gradient-to-br from-cyan-400 via-teal-500 to-violet-600 shadow-[0_0_22px_rgba(16,185,129,0.95),_0_4px_12px_rgba(0,0,0,0.5)]'
+            : 'bg-gradient-to-br from-amber-300 via-indigo-500 to-red-500 shadow-[0_0_22px_rgba(249,115,22,0.95),_0_4px_12px_rgba(0,0,0,0.5)]'
             }`}
           style={{
             left: `${percentage}%`,
@@ -299,9 +299,9 @@ const renderMarkdown = (text) => {
 };
 
 const StatsPanel = ({ entries, isGame, PopcornRating }) => {
-  const brandColorText = isGame ? 'text-emerald-400' : 'text-orange-500'
-  const brandBg = isGame ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-orange-500/10 border-orange-500/20'
-  const barColor = isGame ? 'bg-emerald-500' : 'bg-orange-500'
+  const brandColorText = isGame ? 'text-cyan-300' : 'text-indigo-500'
+  const brandBg = isGame ? 'bg-cyan-500/10 border-cyan-500/20' : 'bg-indigo-500/10 border-indigo-500/20'
+  const barColor = isGame ? 'bg-cyan-500' : 'bg-indigo-500'
 
   // Calculations for Stats
   const totalCount = entries.length
@@ -354,29 +354,29 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+        <div className="p-5 rounded-3xl bg-ink/40 border border-white/10 backdrop-blur-md flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Total Tracked</span>
           <div className="flex items-baseline gap-2 mt-4">
             <span className="text-3xl font-black text-white">{totalCount}</span>
             <span className="text-xs font-semibold text-slate-400">{isGame ? 'games' : 'titles'}</span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-slate-950 mt-4 overflow-hidden">
+          <div className="h-1.5 w-full rounded-full bg-midnight mt-4 overflow-hidden">
             <div className={`h-full ${barColor}`} style={{ width: '100%' }} />
           </div>
         </div>
 
-        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+        <div className="p-5 rounded-3xl bg-ink/40 border border-white/10 backdrop-blur-md flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
             {isGame ? 'Currently Playing' : 'Currently Watching'}
           </span>
           <div className="flex items-baseline gap-2 mt-4">
             <span className="text-3xl font-black text-white">{watchingCount}</span>
-            <span className={`w-2.5 h-2.5 rounded-full ${isGame ? 'bg-emerald-500' : 'bg-orange-500'} animate-pulse inline-block align-middle ml-1`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${isGame ? 'bg-cyan-500' : 'bg-indigo-500'} animate-pulse inline-block align-middle ml-1`} />
           </div>
           <span className="text-[10px] text-slate-400 mt-4">Active engagement</span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+        <div className="p-5 rounded-3xl bg-ink/40 border border-white/10 backdrop-blur-md flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
             {isGame ? 'Played & Vaulted' : 'Seen & Vaulted'}
           </span>
@@ -389,7 +389,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
           </span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between">
+        <div className="p-5 rounded-3xl bg-ink/40 border border-white/10 backdrop-blur-md flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Average Rating</span>
           <div className="flex items-baseline gap-2 mt-4">
             <span className="text-3xl font-black text-white">{avgRating}</span>
@@ -404,7 +404,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
       {/* Detailed Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Genre Performance */}
-        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md space-y-4">
+        <div className="p-6 rounded-3xl bg-ink/40 border border-white/10 backdrop-blur-md space-y-4">
           <h3 className="text-xs font-black uppercase tracking-wider text-white">Top Genres</h3>
           {topGenres.length === 0 ? (
             <p className="text-slate-500 text-xs italic py-6 text-center">Not enough data to calculate genres.</p>
@@ -418,7 +418,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
                       <span className="font-semibold text-slate-200">{genre}</span>
                       <span className="text-slate-400 font-bold">{count} ({pct}%)</span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden">
+                    <div className="h-2 w-full rounded-full bg-midnight overflow-hidden">
                       <div className={`h-full ${barColor}`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
@@ -429,7 +429,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
         </div>
 
         {/* Type / Platform Distribution */}
-        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md space-y-4">
+        <div className="p-6 rounded-3xl bg-ink/40 border border-white/10 backdrop-blur-md space-y-4">
           <h3 className="text-xs font-black uppercase tracking-wider text-white">
             {isGame ? 'Platform Distribution' : 'Category Distribution'}
           </h3>
@@ -440,7 +440,7 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
               {categoryCountsList.map(([cat, count]) => {
                 const pct = totalCount > 0 ? ((count / totalCount) * 100).toFixed(0) : 0
                 return (
-                  <div key={cat} className="flex justify-between items-center p-3 bg-slate-950/40 border border-white/5 rounded-2xl hover:border-slate-800 transition-colors">
+                  <div key={cat} className="flex justify-between items-center p-3 bg-midnight/40 border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
                     <span className="text-xs font-bold text-slate-200">{cat}</span>
                     <div className="flex items-center gap-3">
                       <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${brandBg} ${brandColorText}`}>
@@ -462,9 +462,9 @@ const StatsPanel = ({ entries, isGame, PopcornRating }) => {
 const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi, PopcornRating }) => {
   const [isUpdating, setIsUpdating] = useState(false)
   const [selectedAddId, setSelectedAddId] = useState('')
-  const brandColorText = isGame ? 'text-emerald-400' : 'text-orange-500'
-  const brandBg = isGame ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-orange-500/10 border-orange-500/20'
-  const selectFocus = isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'
+  const brandColorText = isGame ? 'text-cyan-300' : 'text-indigo-500'
+  const brandBg = isGame ? 'bg-cyan-500/10 border-cyan-500/20' : 'bg-indigo-500/10 border-indigo-500/20'
+  const selectFocus = isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'
 
   // Get ranked entries, sorted by rank ascending
   const rankedItems = entries
@@ -574,11 +574,11 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
 
         {/* Add Item to Leaderboard Form */}
         {unrankedItems.length > 0 && (
-          <form onSubmit={handleAdd} className="flex items-center gap-2 bg-slate-900/40 border border-slate-800/80 p-1.5 rounded-2xl animate-in fade-in duration-300">
+          <form onSubmit={handleAdd} className="flex items-center gap-2 bg-ink/40 border border-white/10 p-1.5 rounded-2xl animate-in fade-in duration-300">
             <select
               value={selectedAddId}
               onChange={(e) => setSelectedAddId(e.target.value)}
-              className={`bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 outline-none transition-all ${selectFocus} max-w-[200px] sm:max-w-xs`}
+              className={`bg-midnight border border-white/10 rounded-xl px-3 py-1.5 text-xs text-slate-200 outline-none transition-all ${selectFocus} max-w-[200px] sm:max-w-xs`}
             >
               <option value="">-- Choose item to rank --</option>
               {unrankedItems.map(item => (
@@ -590,7 +590,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
             <button
               type="submit"
               disabled={!selectedAddId || isUpdating}
-              className={`px-4 py-1.5 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1 shrink-0 ${isGame ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-orange-600 hover:bg-orange-500'
+              className={`px-4 py-1.5 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1 shrink-0 ${isGame ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-indigo-600 hover:bg-indigo-500'
                 } disabled:opacity-40 disabled:pointer-events-none`}
             >
               {isUpdating ? (
@@ -607,7 +607,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
       </div>
 
       {rankedItems.length === 0 ? (
-        <div className="bg-slate-900/20 border border-slate-800/60 p-12 rounded-3xl text-center backdrop-blur-sm">
+        <div className="bg-ink/20 border border-white/10/60 p-12 rounded-3xl text-center backdrop-blur-sm">
           <Crown className="w-12 h-12 text-slate-700 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">Your Leaderboard is Empty</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto mt-2 leading-relaxed">
@@ -620,17 +620,17 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
             const isTop3 = item.rank <= 3
             const rankLabel = item.rank === 1 ? '🥇 1st' : item.rank === 2 ? '🥈 2nd' : item.rank === 3 ? '🥉 3rd' : `#${item.rank}`
             const rankBadgeColor = item.rank === 1
-              ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.15)] font-black text-xs scale-[1.05]'
+              ? 'bg-yellow-500/10 border-yellow-500/30 text-amber-300 shadow-[0_0_15px_rgba(234,179,8,0.15)] font-black text-xs scale-[1.05]'
               : item.rank === 2
-                ? 'bg-slate-300/10 border-slate-300/30 text-slate-300 font-black text-xs'
+                ? 'bg-slate-300/10 border-slate-300/30 text-slate-200 font-black text-xs'
                 : item.rank === 3
                   ? 'bg-amber-600/10 border-amber-600/30 text-amber-500 font-black text-xs'
-                  : 'bg-slate-950/80 border-white/5 text-slate-400 text-[11px] font-bold'
+                  : 'bg-midnight/80 border-white/5 text-slate-400 text-[11px] font-bold'
 
             return (
               <div
                 key={item.id}
-                className="group relative bg-slate-900/40 hover:bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 p-4 rounded-3xl flex items-center justify-between gap-4 transition-all duration-300 backdrop-blur-md"
+                className="group relative bg-ink/40 hover:bg-ink/60 border border-white/10 hover:border-white/10 p-4 rounded-3xl flex items-center justify-between gap-4 transition-all duration-300 backdrop-blur-md"
               >
                 {/* Left side: Rank, Image and metadata */}
                 <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -647,7 +647,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                       className="w-10 h-14 object-cover rounded-xl border border-white/5 shadow-md shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-14 bg-slate-950 rounded-xl border border-white/5 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-14 bg-midnight rounded-xl border border-white/5 flex items-center justify-center shrink-0">
                       {isGame ? <Gamepad className="w-5 h-5 text-slate-600" /> : <Film className="w-5 h-5 text-slate-600" />}
                     </div>
                   )}
@@ -656,7 +656,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black text-white truncate">{item.title}</span>
-                      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5">
+                      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5">
                         {isGame ? item.platform : item.category}
                       </span>
                     </div>
@@ -681,7 +681,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                   <button
                     onClick={() => handleMove(index, 'up')}
                     disabled={index === 0 || isUpdating}
-                    className="p-2 bg-slate-950/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                    className="p-2 bg-midnight/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
                     title="Move Up"
                   >
                     <ChevronLeft className="w-4 h-4 rotate-90" />
@@ -689,7 +689,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                   <button
                     onClick={() => handleMove(index, 'down')}
                     disabled={index === rankedItems.length - 1 || isUpdating}
-                    className="p-2 bg-slate-950/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                    className="p-2 bg-midnight/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
                     title="Move Down"
                   >
                     <ChevronLeft className="w-4 h-4 -rotate-90" />
@@ -877,13 +877,13 @@ const OnboardingModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md select-none">
-      <div className="relative bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-midnight/80 backdrop-blur-lg select-none">
+      <div className="relative glass-strong w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
 
         {/* Header */}
-        <div className="p-6 border-b border-white/5 bg-slate-950/40 flex items-center justify-between">
+        <div className="p-6 border-b border-white/5 bg-midnight/40 flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Step {step} of 4</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Step {step} of 4</span>
             <h2 className="text-lg font-black text-white uppercase tracking-wider mt-1">
               {step === 1 && "Application Features Overview"}
               {step === 2 && "Select Preferred Languages"}
@@ -891,9 +891,9 @@ const OnboardingModal = ({
               {step === 4 && "Pick Liked Games"}
             </h2>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className={`w-6 h-1.5 rounded-full transition-all duration-300 ${i <= step ? 'bg-orange-500' : 'bg-slate-800'}`} />
+              <div key={i} className={`w-6 h-1.5 rounded-full transition-all duration-300 ${i <= step ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]' : 'bg-slate-800'}`} />
             ))}
           </div>
         </div>
@@ -903,26 +903,26 @@ const OnboardingModal = ({
           {step === 1 && (
             <div className="space-y-6">
               {/* Carousel card */}
-              <div className="bg-slate-950/40 border border-slate-800/80 p-6 rounded-3xl min-h-[320px] flex flex-col justify-between items-center text-center relative overflow-hidden">
+              <div className="bg-midnight/40 border border-white/10 p-6 rounded-3xl min-h-[320px] flex flex-col justify-between items-center text-center relative overflow-hidden">
                 {/* Glow blob */}
-                <div className={`absolute -top-12 -left-12 w-36 h-36 rounded-full blur-2xl pointer-events-none opacity-20 transition-colors duration-500 ${tutorialSlide === 0 ? 'bg-orange-500' :
-                    tutorialSlide === 1 ? 'bg-purple-500' :
-                      tutorialSlide === 2 ? 'bg-cyan-500' : 'bg-emerald-500'
+                <div className={`absolute -top-12 -left-12 w-36 h-36 rounded-full blur-2xl pointer-events-none opacity-20 transition-colors duration-500 ${tutorialSlide === 0 ? 'bg-indigo-500' :
+                  tutorialSlide === 1 ? 'bg-purple-500' :
+                    tutorialSlide === 2 ? 'bg-cyan-500' : 'bg-cyan-500'
                   }`} />
 
                 <div className="flex-grow w-full py-2 animate-in fade-in zoom-in-95 duration-300">
                   {tutorialSlide === 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                       <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
-                        <div className="p-4 rounded-3xl bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-bounce self-center md:self-start">
+                        <div className="p-4 rounded-3xl bg-gradient-to-br from-indigo-500 to-red-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-bounce self-center md:self-start">
                           <Sparkles className="w-8 h-8 animate-pulse" />
                         </div>
                         <h3 className="text-lg font-black text-white uppercase tracking-wider">Welcome to Popcorn & GameCorn</h3>
-                        <p className="text-slate-300 text-xs leading-relaxed">
+                        <p className="text-slate-200 text-xs leading-relaxed">
                           A premium double-sided hub designed to track your entire entertainment library. Seamlessly switch between **Popcorn Mode** for movies/shows and **GameCorn Mode** for games using the switcher in the header.
                         </p>
                       </div>
-                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                      <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-midnight flex items-center justify-center p-1">
                         <img
                           src="/tutorial_welcome.png"
                           alt="Welcome Tutorial"
@@ -940,11 +940,11 @@ const OnboardingModal = ({
                           <Bookmark className="w-8 h-8" />
                         </div>
                         <h3 className="text-lg font-black text-white uppercase tracking-wider">Statuses & Tracking</h3>
-                        <p className="text-slate-300 text-xs leading-relaxed">
+                        <p className="text-slate-200 text-xs leading-relaxed">
                           Organize your titles: send to **Watchlist / Backlog**, log active sessions in **Currently Watching / Currently Playing** (with count badges), or store completed logs in **Seen / Played** with custom reviews.
                         </p>
                       </div>
-                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                      <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-midnight flex items-center justify-center p-1">
                         <img
                           src="/tutorial_tracking.png"
                           alt="Tracking Tutorial"
@@ -962,11 +962,11 @@ const OnboardingModal = ({
                           <Plus className="w-8 h-8" />
                         </div>
                         <h3 className="text-lg font-black text-white uppercase tracking-wider">Custom Wishlist Groups</h3>
-                        <p className="text-slate-300 text-xs leading-relaxed">
+                        <p className="text-slate-200 text-xs leading-relaxed">
                           Create multiple groups like "Weekend Binge", "Co-op Backlog", or "Anime Classics" and associate items dynamically to build highly tailored custom wishlists.
                         </p>
                       </div>
-                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                      <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-midnight flex items-center justify-center p-1">
                         <img
                           src="/tutorial_groups.png"
                           alt="Groups Tutorial"
@@ -980,15 +980,15 @@ const OnboardingModal = ({
                   {tutorialSlide === 3 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                       <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
-                        <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] self-center md:self-start">
+                        <div className="p-4 rounded-3xl bg-gradient-to-br from-cyan-500 to-teal-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] self-center md:self-start">
                           <Trophy className="w-8 h-8" />
                         </div>
                         <h3 className="text-lg font-black text-white uppercase tracking-wider">AI Assistant & Insights</h3>
-                        <p className="text-slate-300 text-xs leading-relaxed">
+                        <p className="text-slate-200 text-xs leading-relaxed">
                           Ask your context-aware **AI assistant** for recommendations or watchlist analysis, and view real-time library metrics (genre progress bars and platform counts) on the new **Stats Panel**.
                         </p>
                       </div>
-                      <div className="relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 flex items-center justify-center p-1">
+                      <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-midnight flex items-center justify-center p-1">
                         <img
                           src="/tutorial_ai.png"
                           alt="AI & Stats Tutorial"
@@ -1006,7 +1006,7 @@ const OnboardingModal = ({
                     <button
                       key={i}
                       onClick={() => setTutorialSlide(i)}
-                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${tutorialSlide === i ? 'bg-orange-500 w-6' : 'bg-slate-800'}`}
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${tutorialSlide === i ? 'bg-indigo-500 w-6' : 'bg-slate-800'}`}
                     />
                   ))}
                 </div>
@@ -1017,7 +1017,7 @@ const OnboardingModal = ({
                 <button
                   disabled={tutorialSlide === 0}
                   onClick={() => setTutorialSlide(prev => prev - 1)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-40"
+                  className="px-4 py-2 border border-white/10 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-40"
                 >
                   Previous Slide
                 </button>
@@ -1031,7 +1031,7 @@ const OnboardingModal = ({
                 ) : (
                   <button
                     onClick={() => setStep(2)}
-                    className="px-5 py-2 bg-orange-600 text-white font-bold rounded-xl text-xs hover:bg-orange-500 transition-all flex items-center gap-1.5"
+                    className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-500 transition-all flex items-center gap-1.5"
                   >
                     <span>Proceed to Setup</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -1054,12 +1054,12 @@ const OnboardingModal = ({
                       key={lang}
                       onClick={() => handleToggleLang(lang)}
                       className={`p-3 rounded-2xl border text-xs font-bold transition-all text-center flex items-center justify-between ${active
-                          ? 'bg-orange-500/10 border-orange-500 text-orange-400 shadow-[0_0_12px_rgba(249,115,22,0.15)]'
-                          : 'bg-slate-950/50 border-white/5 text-slate-400 hover:border-slate-800 hover:text-slate-200'
+                        ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.25)]'
+                        : 'bg-midnight/50 border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200'
                         }`}
                     >
                       <span>{lang}</span>
-                      {active && <Check className="w-3.5 h-3.5 text-orange-400" />}
+                      {active && <Check className="w-3.5 h-3.5 text-indigo-300" />}
                     </button>
                   )
                 })}
@@ -1080,19 +1080,19 @@ const OnboardingModal = ({
                   placeholder="Search globally (e.g. Inception, Breaking Bad, Naruto)..."
                   value={movieQuery}
                   onChange={(e) => setMovieQuery(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
+                  className="w-full bg-midnight/60 border border-white/10 focus:border-indigo-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
                 />
               </div>
 
               {movieLoading && (
                 <div className="flex justify-center py-4">
-                  <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                  <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
                 </div>
               )}
 
               {/* Search Results list */}
               {!movieLoading && movieResults.length > 0 && (
-                <div className="bg-slate-950/50 border border-slate-850 rounded-2xl overflow-hidden divide-y divide-white/5">
+                <div className="bg-midnight/50 border border-slate-850 rounded-2xl overflow-hidden divide-y divide-white/5">
                   {movieResults.map((movie) => {
                     const alreadySelected = selectedMovies.some(x => x.title === movie.title)
                     return (
@@ -1101,7 +1101,7 @@ const OnboardingModal = ({
                           {movie.poster_url ? (
                             <img src={movie.poster_url} className="w-9 h-12 object-cover rounded-md shrink-0" alt="" />
                           ) : (
-                            <div className="w-9 h-12 bg-slate-900 rounded-md shrink-0 flex items-center justify-center">
+                            <div className="w-9 h-12 bg-ink rounded-md shrink-0 flex items-center justify-center">
                               <Film className="w-4 h-4 text-slate-700" />
                             </div>
                           )}
@@ -1113,8 +1113,8 @@ const OnboardingModal = ({
                         <button
                           onClick={() => handleSelectMovie(movie)}
                           className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${alreadySelected
-                              ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
-                              : 'bg-orange-600 hover:bg-orange-500 text-white'
+                            ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                             }`}
                         >
                           {alreadySelected ? 'Remove' : 'Like'}
@@ -1131,7 +1131,7 @@ const OnboardingModal = ({
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Liked Movies ({selectedMovies.length}/10)</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedMovies.map(movie => (
-                      <div key={movie.title} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-full text-xs font-semibold">
+                      <div key={movie.title} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-full text-xs font-semibold">
                         <span className="truncate max-w-[150px]">{movie.title}</span>
                         <button onClick={() => setSelectedMovies(prev => prev.filter(x => x.title !== movie.title))} className="hover:text-white rounded-full p-0.5">
                           <X className="w-3 h-3" />
@@ -1157,19 +1157,19 @@ const OnboardingModal = ({
                   placeholder="Search globally (e.g. Elden Ring, GTA V, Witcher 3)..."
                   value={gameQuery}
                   onChange={(e) => setGameQuery(e.target.value)}
-                  className="w-full bg-slate-950/60 border border-slate-850 focus:border-emerald-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
+                  className="w-full bg-midnight/60 border border-slate-850 focus:border-cyan-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
                 />
               </div>
 
               {gameLoading && (
                 <div className="flex justify-center py-4">
-                  <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+                  <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
                 </div>
               )}
 
               {/* Search Results list */}
               {!gameLoading && gameResults.length > 0 && (
-                <div className="bg-slate-950/50 border border-slate-850 rounded-2xl overflow-hidden divide-y divide-white/5">
+                <div className="bg-midnight/50 border border-slate-850 rounded-2xl overflow-hidden divide-y divide-white/5">
                   {gameResults.map((game) => {
                     const alreadySelected = selectedGames.some(x => x.title === game.title)
                     return (
@@ -1178,7 +1178,7 @@ const OnboardingModal = ({
                           {game.poster_url ? (
                             <img src={game.poster_url} className="w-9 h-12 object-cover rounded-md shrink-0" alt="" />
                           ) : (
-                            <div className="w-9 h-12 bg-slate-900 rounded-md shrink-0 flex items-center justify-center">
+                            <div className="w-9 h-12 bg-ink rounded-md shrink-0 flex items-center justify-center">
                               <Gamepad className="w-4 h-4 text-slate-700" />
                             </div>
                           )}
@@ -1190,8 +1190,8 @@ const OnboardingModal = ({
                         <button
                           onClick={() => handleSelectGame(game)}
                           className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${alreadySelected
-                              ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
-                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            ? 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/25'
+                            : 'bg-cyan-600 hover:bg-cyan-500 text-white'
                             }`}
                         >
                           {alreadySelected ? 'Remove' : 'Like'}
@@ -1208,7 +1208,7 @@ const OnboardingModal = ({
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Liked Games ({selectedGames.length}/10)</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedGames.map(game => (
-                      <div key={game.title} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-semibold">
+                      <div key={game.title} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 rounded-full text-xs font-semibold">
                         <span className="truncate max-w-[150px]">{game.title}</span>
                         <button onClick={() => setSelectedGames(prev => prev.filter(x => x.title !== game.title))} className="hover:text-white rounded-full p-0.5">
                           <X className="w-3 h-3" />
@@ -1223,11 +1223,11 @@ const OnboardingModal = ({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-white/5 bg-slate-950/40 flex justify-between items-center">
+        <div className="p-6 border-t border-white/5 bg-midnight/40 flex justify-between items-center">
           <button
             onClick={() => step > 1 && setStep(prev => prev - 1)}
             disabled={step === 1}
-            className="px-4 py-2 border border-slate-800 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            className="px-4 py-2 border border-white/10 text-slate-400 hover:text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
             Back
           </button>
@@ -1240,7 +1240,7 @@ const OnboardingModal = ({
                 }
                 setStep(prev => prev + 1)
               }}
-              className="px-5 py-2 text-white font-bold rounded-xl text-xs bg-orange-600 hover:bg-orange-500 transition-colors"
+              className="px-5 py-2 text-white font-bold rounded-xl text-xs bg-indigo-600 hover:bg-indigo-500 transition-colors"
             >
               Next Step
             </button>
@@ -1248,7 +1248,7 @@ const OnboardingModal = ({
             <button
               onClick={handleSubmitOnboard}
               disabled={isSubmittingOnboard}
-              className="px-5 py-2 text-white font-bold rounded-xl text-xs bg-orange-600 hover:bg-orange-500 transition-colors flex items-center gap-1.5"
+              className="px-5 py-2 text-white font-bold rounded-xl text-xs bg-indigo-600 hover:bg-indigo-500 transition-colors flex items-center gap-1.5"
             >
               {isSubmittingOnboard ? (
                 <>
@@ -1405,6 +1405,19 @@ export default function PopcornDashboard() {
   const [newGroupName, setNewGroupName] = useState('')
   const [isSavingGroup, setIsSavingGroup] = useState(false)
 
+  // Add to Group Modal State
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false)
+  const [addToGroupTarget, setAddToGroupTarget] = useState(null)
+  const [selectedGroupIds, setSelectedGroupIds] = useState([])
+  const [newGroupModalInput, setNewGroupModalInput] = useState('')
+  const [isCreatingGroupInModal, setIsCreatingGroupInModal] = useState(false)
+  const [isSavingWatchlist, setIsSavingWatchlist] = useState(false)
+  const [togglingGroupId, setTogglingGroupId] = useState(null)
+  const [updatingStatusType, setUpdatingStatusType] = useState(null)
+  const [isSavingSeen, setIsSavingSeen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deletingGroupId, setDeletingGroupId] = useState(null)
+
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -1553,38 +1566,54 @@ export default function PopcornDashboard() {
     }
   }, [discoverCategory, discoverGenre, discoverLanguage, activeTab, appMode])
 
-  const handleAddToWatchlist = async (item) => {
+  const handleAddToWatchlist = (item) => {
+    setAddToGroupTarget(item)
+    setSelectedGroupIds([])
+    setNewGroupModalInput('')
+    setShowAddToGroupModal(true)
+  }
+
+  const confirmAddToWatchlist = async () => {
+    if (!addToGroupTarget) return
+    setIsSavingWatchlist(true)
     try {
       if (appMode === 'gamecorn') {
         const res = await gamesApi.create({
-          title: item.title,
-          platform: item.platform || 'PC',
-          rating: item.rating,
-          synopsis: item.synopsis,
+          title: addToGroupTarget.title,
+          platform: addToGroupTarget.platform || 'PC',
+          rating: addToGroupTarget.rating,
+          synopsis: addToGroupTarget.synopsis,
           reasons_for_liking: 'Saved from recommendations',
-          genres: item.genres,
-          poster_url: item.poster_url,
-          poster_data: null
+          genres: addToGroupTarget.genres,
+          poster_url: addToGroupTarget.poster_url,
+          poster_data: null,
+          group_ids: selectedGroupIds
         })
         setEntries(prev => [res, ...prev])
-        toast.success(`"${item.title}" added to your Playlist!`)
+        toast.success(`"${addToGroupTarget.title}" added to your Playlist!`)
       } else {
         const res = await popcornApi.create({
-          title: item.title,
-          category: item.category,
-          language: item.language,
-          rating: item.rating,
-          synopsis: item.synopsis,
+          title: addToGroupTarget.title,
+          category: addToGroupTarget.category,
+          language: addToGroupTarget.language,
+          rating: addToGroupTarget.rating,
+          synopsis: addToGroupTarget.synopsis,
           reasons_for_liking: 'Saved from recommendations',
-          genres: item.genres,
-          poster_url: item.poster_url,
-          poster_data: null
+          genres: addToGroupTarget.genres,
+          poster_url: addToGroupTarget.poster_url,
+          poster_data: null,
+          group_ids: selectedGroupIds
         })
         setEntries(prev => [res, ...prev])
-        toast.success(`"${item.title}" added to your watchlist!`)
+        toast.success(`"${addToGroupTarget.title}" added to your watchlist!`)
       }
+      setShowAddToGroupModal(false)
+      setAddToGroupTarget(null)
+      setSelectedGroupIds([])
     } catch (err) {
       toast.error('Failed to add entry')
+    } finally {
+      setIsSavingWatchlist(false)
     }
   }
 
@@ -1673,6 +1702,7 @@ export default function PopcornDashboard() {
   }, [selectedEntry])
 
   const handleUpdateStatus = async (statusType) => {
+    setUpdatingStatusType(statusType)
     try {
       let payload = {
         title: selectedEntry.title,
@@ -1738,15 +1768,16 @@ export default function PopcornDashboard() {
       })
       setSelectedEntry(res)
       toast.success('Status updated successfully!')
-    } catch (err) {
-      toast.error('Failed to update status')
+    } finally {
+      setUpdatingStatusType(null)
     }
   }
 
   const handleToggleGroup = async (group) => {
-    if (!selectedEntry.id) {
-      // First save to library and then associate group
-      try {
+    setTogglingGroupId(group.id)
+    try {
+      if (!selectedEntry.id) {
+        // First save to library and then associate group
         const payload = isGame ? {
           title: selectedEntry.title,
           platform: selectedEntry.platform || 'PC',
@@ -1772,64 +1803,62 @@ export default function PopcornDashboard() {
         setEntries(prev => [res, ...prev])
         setSelectedEntry(res)
         toast.success(`Saved and added to "${group.name}"!`)
-      } catch (err) {
-        toast.error('Failed to save and add to group')
+      } else {
+        // Toggle association
+        const currentGroupIds = selectedEntry.custom_groups ? selectedEntry.custom_groups.map(g => g.id) : []
+        const isMember = currentGroupIds.includes(group.id)
+        const newGroupIds = isMember
+          ? currentGroupIds.filter(id => id !== group.id)
+          : [...currentGroupIds, group.id]
+
+        const payload = isGame ? {
+          title: selectedEntry.title,
+          platform: selectedEntry.platform,
+          rating: selectedEntry.rating,
+          synopsis: selectedEntry.synopsis,
+          reasons_for_liking: selectedEntry.reasons_for_liking || '',
+          genres: selectedEntry.genres,
+          poster_url: selectedEntry.poster_url,
+          poster_data: selectedEntry.poster_data,
+          my_rating: selectedEntry.my_rating,
+          is_played: selectedEntry.is_played,
+          is_playing: selectedEntry.is_playing,
+          tags: selectedEntry.tags,
+          group_ids: newGroupIds
+        } : {
+          title: selectedEntry.title,
+          category: selectedEntry.category,
+          language: selectedEntry.language,
+          rating: selectedEntry.rating,
+          synopsis: selectedEntry.synopsis,
+          reasons_for_liking: selectedEntry.reasons_for_liking || '',
+          genres: selectedEntry.genres,
+          poster_url: selectedEntry.poster_url,
+          poster_data: selectedEntry.poster_data,
+          my_rating: selectedEntry.my_rating,
+          is_seen: selectedEntry.is_seen,
+          is_watching: selectedEntry.is_watching,
+          tags: selectedEntry.tags,
+          group_ids: newGroupIds
+        }
+
+        const res = isGame
+          ? await gamesApi.update(selectedEntry.id, payload)
+          : await popcornApi.update(selectedEntry.id, payload)
+
+        setEntries(prev => prev.map(e => e.id === selectedEntry.id ? res : e))
+        setSelectedEntry(res)
+        toast.success(isMember ? `Removed from "${group.name}"` : `Added to "${group.name}"`)
       }
-      return
-    }
-
-    // Toggle association
-    const currentGroupIds = selectedEntry.custom_groups ? selectedEntry.custom_groups.map(g => g.id) : []
-    const isMember = currentGroupIds.includes(group.id)
-    const newGroupIds = isMember
-      ? currentGroupIds.filter(id => id !== group.id)
-      : [...currentGroupIds, group.id]
-
-    try {
-      const payload = isGame ? {
-        title: selectedEntry.title,
-        platform: selectedEntry.platform,
-        rating: selectedEntry.rating,
-        synopsis: selectedEntry.synopsis,
-        reasons_for_liking: selectedEntry.reasons_for_liking || '',
-        genres: selectedEntry.genres,
-        poster_url: selectedEntry.poster_url,
-        poster_data: selectedEntry.poster_data,
-        my_rating: selectedEntry.my_rating,
-        is_played: selectedEntry.is_played,
-        is_playing: selectedEntry.is_playing,
-        tags: selectedEntry.tags,
-        group_ids: newGroupIds
-      } : {
-        title: selectedEntry.title,
-        category: selectedEntry.category,
-        language: selectedEntry.language,
-        rating: selectedEntry.rating,
-        synopsis: selectedEntry.synopsis,
-        reasons_for_liking: selectedEntry.reasons_for_liking || '',
-        genres: selectedEntry.genres,
-        poster_url: selectedEntry.poster_url,
-        poster_data: selectedEntry.poster_data,
-        my_rating: selectedEntry.my_rating,
-        is_seen: selectedEntry.is_seen,
-        is_watching: selectedEntry.is_watching,
-        tags: selectedEntry.tags,
-        group_ids: newGroupIds
-      }
-
-      const res = isGame
-        ? await gamesApi.update(selectedEntry.id, payload)
-        : await popcornApi.update(selectedEntry.id, payload)
-
-      setEntries(prev => prev.map(e => e.id === selectedEntry.id ? res : e))
-      setSelectedEntry(res)
-      toast.success(isMember ? `Removed from "${group.name}"` : `Added to "${group.name}"`)
     } catch (err) {
       toast.error('Failed to update group associations')
+    } finally {
+      setTogglingGroupId(null)
     }
   }
 
   const handleSaveSeen = async () => {
+    setIsSavingSeen(true)
     try {
       const isFirstSeen = selectedEntry.id
         ? (isGame ? !selectedEntry.is_played : !selectedEntry.is_seen)
@@ -1935,6 +1964,8 @@ export default function PopcornDashboard() {
       }
     } catch (err) {
       toast.error('Failed to save review')
+    } finally {
+      setIsSavingSeen(false)
     }
   }
 
@@ -2065,7 +2096,7 @@ export default function PopcornDashboard() {
             {/* Left Arrow Button */}
             <button
               onClick={() => scrollRow(rowId, 'left')}
-              className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
+              className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 hover:scale-105 active:scale-95"
               title="Scroll Left"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -2086,15 +2117,15 @@ export default function PopcornDashboard() {
                     className="movie-3d-card-container min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] flex-shrink-0"
                   >
                     <div
-                      className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
+                      className="movie-3d-card bg-ink/60 border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
                     >
                       <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                       {showRank && (
-                        <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-orange-600/90 text-white flex items-center justify-center font-black text-xs shadow-md z-10">
+                        <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-indigo-600/90 text-white flex items-center justify-center font-black text-xs shadow-md z-10">
                           {idx + 1}
                         </div>
                       )}
-                      <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
+                      <div className="aspect-[2/3] bg-midnight relative overflow-hidden shrink-0 rounded-t-2xl">
                         {item.poster_url ? (
                           <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                         ) : (
@@ -2103,17 +2134,17 @@ export default function PopcornDashboard() {
                             <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                           </div>
                         )}
-                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5">
-                          <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-midnight/80 border border-white/10 text-[9px] font-black text-amber-300 flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" />
                           <span>{Number(item.rating || 0).toFixed(1)}</span>
                         </div>
-                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-300">
+                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-midnight/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-200">
                           {item.category}
                         </div>
                       </div>
                       <div className="p-3 flex-1 flex flex-col justify-between min-h-0">
                         <div>
-                          <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug group-hover:text-orange-500 transition-colors" title={item.title}>{item.title}</h4>
+                          <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug group-hover:text-indigo-500 transition-colors" title={item.title}>{item.title}</h4>
                           <p className="text-[9px] text-slate-500 mt-0.5">{item.language}</p>
                         </div>
                         <button
@@ -2124,7 +2155,7 @@ export default function PopcornDashboard() {
                           disabled={inWatchlist}
                           className={`w-full mt-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${inWatchlist
                             ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                            : 'bg-orange-600 hover:bg-orange-500 text-white'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                             }`}
                         >
                           {inWatchlist ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
@@ -2140,7 +2171,7 @@ export default function PopcornDashboard() {
             {/* Right Arrow Button */}
             <button
               onClick={() => scrollRow(rowId, 'right')}
-              className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
+              className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 hover:scale-105 active:scale-95"
               title="Scroll Right"
             >
               <ChevronRight className="w-5 h-5" />
@@ -2343,6 +2374,7 @@ export default function PopcornDashboard() {
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to remove this?')) return
+    setIsDeleting(true)
     try {
       if (appMode === 'gamecorn') {
         await gamesApi.delete(id)
@@ -2354,6 +2386,8 @@ export default function PopcornDashboard() {
       if (showViewModal) setShowViewModal(false)
     } catch (err) {
       toast.error('Failed to remove entry')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -2383,10 +2417,26 @@ export default function PopcornDashboard() {
     const matchesGenre = filterGenre === 'All' || (e.genres && e.genres.split(', ').includes(filterGenre))
     const matchesLanguage = appMode === 'gamecorn' ? true : (filterLanguage === 'All' || e.language === filterLanguage)
     const matchesSearch = dashboardSearch.trim() === '' || e.title.toLowerCase().includes(dashboardSearch.toLowerCase())
-    const matchesGroup = selectedGroupFilter === 'All' || (e.custom_groups && e.custom_groups.some(g => g.id === parseInt(selectedGroupFilter)))
+    const matchesGroup =
+      selectedGroupFilter === 'All' ? true :
+        selectedGroupFilter === 'Unassigned' ? (!e.custom_groups || e.custom_groups.length === 0) :
+          (e.custom_groups && e.custom_groups.some(g => g.id === parseInt(selectedGroupFilter)))
 
     return matchesTab && matchesCategory && matchesGenre && matchesLanguage && matchesSearch && matchesGroup
   })
+
+  const getGroupItemCount = (groupId) => {
+    return entries.filter(e => {
+      const isSeenOrPlayed = appMode === 'gamecorn' ? e.is_played : e.is_seen
+      const isWatchingOrPlaying = appMode === 'gamecorn' ? e.is_playing : e.is_watching
+      const inWatchlist = !isSeenOrPlayed && !isWatchingOrPlaying
+      if (!inWatchlist) return false
+
+      if (groupId === 'All') return true
+      if (groupId === 'Unassigned') return !e.custom_groups || e.custom_groups.length === 0
+      return e.custom_groups && e.custom_groups.some(cg => cg.id === groupId)
+    }).length
+  }
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredEntries.length / itemsPerPage)
@@ -2401,38 +2451,38 @@ export default function PopcornDashboard() {
 
 
 
-  const brandGradient = isGame ? 'from-emerald-400 via-teal-500 to-violet-500' : 'from-orange-500 via-red-500 to-yellow-500'
+  const brandGradient = isGame ? 'from-cyan-300 via-teal-500 to-violet-500' : 'from-indigo-500 via-red-500 to-yellow-500'
   const brandName = isGame ? 'GameCorn' : 'Popcorn'
   const BrandIcon = isGame ? Gamepad2 : PopcornIcon
-  const textPrimaryColor = isGame ? 'text-emerald-400' : 'text-orange-500'
-  const bgPrimaryColor = isGame ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-orange-600 hover:bg-orange-500'
-  const bgPrimaryColorLight = isGame ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/20' : 'bg-orange-600/20 text-orange-500 hover:bg-orange-600/30 border border-orange-500/20'
-  const borderPrimaryFocus = isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'
-  const activeBorderClass = isGame ? 'border-emerald-500 text-emerald-500' : 'border-orange-500 text-orange-500'
-  const surpriseBtnClass = isGame ? 'from-emerald-600 to-violet-600 hover:from-emerald-500 hover:to-violet-500 shadow-emerald-600/20' : 'from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-600/20'
+  const textPrimaryColor = isGame ? 'text-cyan-300' : 'text-indigo-500'
+  const bgPrimaryColor = isGame ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-indigo-600 hover:bg-indigo-500'
+  const bgPrimaryColorLight = isGame ? 'bg-cyan-600/20 text-cyan-300 hover:bg-cyan-600/30 border border-cyan-500/20' : 'bg-indigo-600/20 text-indigo-500 hover:bg-indigo-600/30 border border-indigo-500/20'
+  const borderPrimaryFocus = isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'
+  const activeBorderClass = isGame ? 'border-cyan-500 text-cyan-500' : 'border-indigo-500 text-indigo-500'
+  const surpriseBtnClass = isGame ? 'from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 shadow-cyan-600/20' : 'from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-600/20'
 
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 pb-16 relative overflow-hidden">
+    <div className="min-h-screen bg-midnight text-slate-100 pb-16 relative overflow-hidden">
       {/* Premium Ambient Glow Blobs */}
-      <div className={`absolute top-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none z-0 ${isGame ? 'bg-emerald-600/8' : 'bg-purple-600/8'}`}></div>
-      <div className={`absolute top-[20%] right-[-100px] w-[600px] h-[600px] rounded-full blur-[130px] pointer-events-none z-0 ${isGame ? 'bg-violet-600/6' : 'bg-orange-600/6'}`}></div>
+      <div className={`absolute top-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none z-0 ${isGame ? 'bg-cyan-600/8' : 'bg-purple-600/8'}`}></div>
+      <div className={`absolute top-[20%] right-[-100px] w-[600px] h-[600px] rounded-full blur-[130px] pointer-events-none z-0 ${isGame ? 'bg-violet-600/6' : 'bg-indigo-600/6'}`}></div>
       <div className={`absolute bottom-[-100px] left-[10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none z-0 ${isGame ? 'bg-cyan-600/6' : 'bg-teal-600/6'}`}></div>
 
       {/* Navbar Header */}
-      <header className="border-b border-white/5 bg-slate-900/40 backdrop-blur-md sticky top-0 z-20 relative">
+      <header className="border-b border-white/5 bg-ink/40 backdrop-blur-md sticky top-0 z-20 relative">
         <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain rounded-lg" />
+            {/* <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain rounded-lg" /> */}
             <h1 className={`font-black text-xl tracking-tight bg-gradient-to-r ${brandGradient} bg-clip-text text-transparent uppercase hidden sm:block`}>{brandName}</h1>
           </div>
 
           {/* Premium Mode Switch Toggle */}
-          <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5 items-center shrink-0">
+          <div className="flex bg-midnight/80 p-1 rounded-2xl border border-white/5 items-center shrink-0">
             <button
               onClick={() => triggerModeSwitch('popcorn')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${!isGame
-                ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                 : 'text-slate-400 hover:text-slate-200'
                 }`}
             >
@@ -2442,7 +2492,7 @@ export default function PopcornDashboard() {
             <button
               onClick={() => triggerModeSwitch('gamecorn')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20'
                 : 'text-slate-400 hover:text-slate-200'
                 }`}
             >
@@ -2455,8 +2505,8 @@ export default function PopcornDashboard() {
             <Link
               to="/trending"
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold shadow-sm ${isGame
-                  ? 'bg-emerald-600/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-600 hover:text-white'
-                  : 'bg-orange-600/10 border-orange-500/20 text-orange-500 hover:bg-orange-600 hover:text-white'
+                ? 'bg-cyan-600/10 border-cyan-500/20 text-cyan-300 hover:bg-cyan-600 hover:text-white'
+                : 'bg-indigo-600/10 border-indigo-500/20 text-indigo-500 hover:bg-indigo-600 hover:text-white'
                 }`}
             >
               <TrendingUp className="w-4 h-4" />
@@ -2467,7 +2517,7 @@ export default function PopcornDashboard() {
 
             <button
               onClick={() => navigate('/settings')}
-              className="p-2 rounded-xl border border-white/5 bg-slate-950/40 hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+              className="p-2 rounded-xl border border-white/5 bg-midnight/40 hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
               title="Profile Settings"
             >
               <Settings className="w-4 h-4" />
@@ -2528,7 +2578,7 @@ export default function PopcornDashboard() {
           >
             <Bookmark className="w-4 h-4 flex-shrink-0" />
             <span>{isGame ? 'My Playlist' : 'My Watchlist'}</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
+            <span className="px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
               {entries.filter(e => isGame ? (!e.is_played && !e.is_playing) : (!e.is_seen && !e.is_watching)).length}
             </span>
           </button>
@@ -2541,7 +2591,7 @@ export default function PopcornDashboard() {
           >
             {isGame ? <Gamepad className="w-4 h-4 flex-shrink-0" /> : <Tv className="w-4 h-4 flex-shrink-0" />}
             <span>{isGame ? 'Currently Playing' : 'Currently Watching'}</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
+            <span className="px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
               {entries.filter(e => isGame ? e.is_playing : e.is_watching).length}
             </span>
           </button>
@@ -2554,7 +2604,7 @@ export default function PopcornDashboard() {
           >
             <BrandIcon className="w-4 h-4 flex-shrink-0" />
             <span>{isGame ? 'Played' : 'Seen'}</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
+            <span className="px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
               {entries.filter(e => isGame ? e.is_played : e.is_seen).length}
             </span>
           </button>
@@ -2577,7 +2627,7 @@ export default function PopcornDashboard() {
           >
             <Crown className="w-4 h-4 flex-shrink-0 text-yellow-500" />
             <span>Leaderboard</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-950/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
+            <span className="px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5 text-[9px] text-slate-400 font-bold ml-1 flex-shrink-0">
               {entries.filter(e => e.rank !== null && e.rank !== undefined).length}
             </span>
           </button>
@@ -2597,7 +2647,7 @@ export default function PopcornDashboard() {
         ) : ['watchlist', 'watching', 'seen'].includes(activeTab) ? (
           <>
             {/* Filters Panel */}
-            <div className="flex flex-col gap-4 mb-8 bg-slate-900/40 border border-slate-800/80 p-5 rounded-3xl backdrop-blur-md">
+            <div className="flex flex-col gap-4 mb-8 bg-ink/40 border border-white/10 p-5 rounded-3xl backdrop-blur-md">
               {/* Search Bar */}
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -2606,12 +2656,12 @@ export default function PopcornDashboard() {
                   placeholder={isGame ? "Search saved games by title..." : "Search saved movies & shows by title..."}
                   value={dashboardSearch}
                   onChange={(e) => setDashboardSearch(e.target.value)}
-                  className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl pl-11 pr-10 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
+                  className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl pl-11 pr-10 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
                 />
                 {dashboardSearch && (
                   <button
                     onClick={() => setDashboardSearch('')}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-200 font-bold uppercase"
                   >
                     Clear
                   </button>
@@ -2628,7 +2678,7 @@ export default function PopcornDashboard() {
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                    className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                   >
                     <option value="All">{isGame ? 'All Platforms' : 'All Categories'}</option>
                     {isGame
@@ -2643,7 +2693,7 @@ export default function PopcornDashboard() {
                   <select
                     value={filterGenre}
                     onChange={(e) => setFilterGenre(e.target.value)}
-                    className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                    className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                   >
                     <option value="All">All Genres</option>
                     {isGame
@@ -2659,7 +2709,7 @@ export default function PopcornDashboard() {
                     <select
                       value={filterLanguage}
                       onChange={(e) => setFilterLanguage(e.target.value)}
-                      className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                      className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                     >
                       <option value="All">All Languages</option>
                       {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
@@ -2673,7 +2723,7 @@ export default function PopcornDashboard() {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Custom Group</label>
                     <button
                       onClick={() => setShowGroupsModal(true)}
-                      className={`text-[9px] font-black uppercase tracking-wider ${isGame ? 'text-emerald-400 hover:text-emerald-300' : 'text-orange-500 hover:text-orange-400'} transition-colors`}
+                      className={`text-[9px] font-black uppercase tracking-wider ${isGame ? 'text-cyan-300 hover:text-cyan-200' : 'text-indigo-500 hover:text-indigo-300'} transition-colors`}
                     >
                       Manage
                     </button>
@@ -2681,7 +2731,7 @@ export default function PopcornDashboard() {
                   <select
                     value={selectedGroupFilter}
                     onChange={(e) => setSelectedGroupFilter(e.target.value)}
-                    className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                    className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                   >
                     <option value="All">All Groups</option>
                     {groups.map(g => (
@@ -2691,6 +2741,132 @@ export default function PopcornDashboard() {
                 </div>
               </div>
             </div>
+            {/* Folder Directory for Watchlist Tab */}
+            {activeTab === 'watchlist' && !loading && selectedGroupFilter === 'All' && (
+              <div className="mb-8 space-y-4">
+                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <FolderHeart className={`w-3.5 h-3.5 ${textPrimaryColor}`} />
+                  <span>{isGame ? 'Playlist Folders' : 'Watchlist Folders'}</span>
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {/* All Items Folder */}
+                  <div
+                    onClick={() => setSelectedGroupFilter('All')}
+                    className={`group/folder relative bg-ink/40 hover:bg-ink/60 border rounded-2xl p-4 flex flex-col justify-between gap-4 cursor-pointer transition-all duration-300 backdrop-blur-md ${selectedGroupFilter === 'All'
+                        ? (isGame ? 'border-cyan-500/50 shadow-md shadow-cyan-500/5' : 'border-indigo-500/50 shadow-md shadow-indigo-500/5')
+                        : 'border-white/10 hover:border-white/20'
+                      }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className={`p-3 rounded-xl ${isGame ? 'bg-cyan-500/10 text-cyan-300' : 'bg-indigo-500/10 text-indigo-300'} group-hover/folder:scale-105 transition-transform duration-300`}>
+                        <Folder className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 group-hover/folder:text-slate-400 transition-colors uppercase tracking-widest">
+                        Folder
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-white group-hover/folder:text-indigo-400 transition-colors truncate">
+                        All Items
+                      </h4>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        {getGroupItemCount('All')} {isGame ? 'games' : 'movies'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Unassigned Folder */}
+                  <div
+                    onClick={() => setSelectedGroupFilter('Unassigned')}
+                    className={`group/folder relative bg-ink/40 hover:bg-ink/60 border rounded-2xl p-4 flex flex-col justify-between gap-4 cursor-pointer transition-all duration-300 backdrop-blur-md ${selectedGroupFilter === 'Unassigned'
+                        ? (isGame ? 'border-cyan-500/50 shadow-md shadow-cyan-500/5' : 'border-indigo-500/50 shadow-md shadow-indigo-500/5')
+                        : 'border-white/10 hover:border-white/20'
+                      }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="p-3 rounded-xl bg-slate-500/10 text-slate-400 group-hover/folder:scale-105 transition-transform duration-300">
+                        <FolderMinus className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 group-hover/folder:text-slate-400 transition-colors uppercase tracking-widest">
+                        System
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-white group-hover/folder:text-indigo-400 transition-colors truncate">
+                        Unassigned
+                      </h4>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        {getGroupItemCount('Unassigned')} {isGame ? 'games' : 'movies'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Custom Folders */}
+                  {groups.map(group => {
+                    const count = getGroupItemCount(group.id)
+                    return (
+                      <div
+                        key={group.id}
+                        onClick={() => setSelectedGroupFilter(group.id.toString())}
+                        className={`group/folder relative bg-ink/40 hover:bg-ink/60 border rounded-2xl p-4 flex flex-col justify-between gap-4 cursor-pointer transition-all duration-300 backdrop-blur-md ${selectedGroupFilter === group.id.toString()
+                            ? (isGame ? 'border-cyan-500/50 shadow-md shadow-cyan-500/5' : 'border-indigo-500/50 shadow-md shadow-indigo-500/5')
+                            : 'border-white/10 hover:border-white/20'
+                          }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className={`p-3 rounded-xl ${isGame ? 'bg-cyan-500/10 text-cyan-300' : 'bg-indigo-500/10 text-indigo-300'} group-hover/folder:scale-105 transition-transform duration-300`}>
+                            <FolderHeart className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-500 group-hover/folder:text-slate-400 transition-colors uppercase tracking-widest">
+                            Custom
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-xs text-white group-hover/folder:text-indigo-400 transition-colors truncate" title={group.name}>
+                            {group.name}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {count} {isGame ? 'games' : 'movies'}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Folder Breadcrumb/Navigation Header */}
+            {activeTab === 'watchlist' && !loading && selectedGroupFilter !== 'All' && (
+              <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 bg-ink/30 border border-white/5 rounded-2xl backdrop-blur-md animate-in slide-in-from-top-4 duration-200">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setSelectedGroupFilter('All')}
+                    className={`p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all hover:bg-white/10 flex items-center justify-center`}
+                    title="Back to Folders"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                      <span>{isGame ? 'Playlist' : 'Watchlist'}</span>
+                      <span>/</span>
+                      <span className={textPrimaryColor}>
+                        {selectedGroupFilter === 'Unassigned' ? 'Unassigned' : 'Group Folder'}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-black text-white uppercase tracking-wide mt-0.5">
+                      {selectedGroupFilter === 'Unassigned'
+                        ? 'Unassigned Items'
+                        : (groups.find(g => g.id.toString() === selectedGroupFilter)?.name || 'Custom Folder')}
+                    </h3>
+                  </div>
+                </div>
+                <div className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 uppercase tracking-wider">
+                  {filteredEntries.length} {filteredEntries.length === 1 ? (isGame ? 'game' : 'movie') : (isGame ? 'games' : 'movies')} found
+                </div>
+              </div>
+            )}
 
             {/* Watchlist Grid */}
             {loading ? (
@@ -2699,17 +2875,21 @@ export default function PopcornDashboard() {
                 <p className="text-slate-400 text-sm">Loading your vault...</p>
               </div>
             ) : filteredEntries.length === 0 ? (
-              <div className="text-center py-24 bg-slate-900/30 rounded-3xl border border-dashed border-slate-800 p-8">
+              <div className="text-center py-24 bg-ink/30 rounded-3xl border border-dashed border-white/10 p-8">
                 <BrandIcon className="w-12 h-12 mx-auto text-slate-700 opacity-40 mb-4" />
-                <h3 className="text-lg font-bold text-slate-300">
-                  Your {activeTab === 'watchlist' ? (isGame ? 'Playlist' : 'Watchlist') : activeTab === 'watching' ? (isGame ? 'Currently Playing' : 'Currently Watching') : (isGame ? 'Played Vault' : 'Seen Vault')} is empty
+                <h3 className="text-lg font-bold text-slate-200">
+                  {activeTab === 'watchlist' && selectedGroupFilter !== 'All'
+                    ? 'This folder is empty'
+                    : `Your ${activeTab === 'watchlist' ? (isGame ? 'Playlist' : 'Watchlist') : activeTab === 'watching' ? (isGame ? 'Currently Playing' : 'Currently Watching') : (isGame ? 'Played Vault' : 'Seen Vault')} is empty`}
                 </h3>
                 <p className="text-slate-500 text-xs mt-1.5 max-w-xs mx-auto mb-4">
-                  {activeTab === 'watchlist'
-                    ? (isGame ? 'Start building your collection by adding games manually or checking recommendations!' : 'Start building your collection by adding movies manually or checking recommendations!')
-                    : activeTab === 'watching'
-                      ? (isGame ? "You aren't playing any games currently. Mark backlog items as Currently Playing!" : "You aren't watching anything currently. Mark watchlist items as Currently Watching!")
-                      : (isGame ? 'Track your played games by marking Playlist items as Played!' : 'Track your watched movies by marking watchlist items as Seen!')}
+                  {activeTab === 'watchlist' && selectedGroupFilter !== 'All'
+                    ? 'Associate items with this group from their details modal, or check this group when adding new items.'
+                    : (activeTab === 'watchlist'
+                      ? (isGame ? 'Start building your collection by adding games manually or checking recommendations!' : 'Start building your collection by adding movies manually or checking recommendations!')
+                      : activeTab === 'watching'
+                        ? (isGame ? "You aren't playing any games currently. Mark backlog items as Currently Playing!" : "You aren't watching anything currently. Mark watchlist items as Currently Watching!")
+                        : (isGame ? 'Track your played games by marking Playlist items as Played!' : 'Track your watched movies by marking watchlist items as Seen!'))}
                 </p>
                 <button
                   onClick={() => setActiveTab('discover')}
@@ -2729,11 +2909,11 @@ export default function PopcornDashboard() {
                       className="movie-3d-card-container cursor-pointer"
                     >
                       <div
-                        className="movie-3d-card bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative"
+                        className="movie-3d-card bg-ink/60 border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative"
                       >
                         <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
                         {/* Poster Cover */}
-                        <div className="aspect-[2/3] bg-slate-950 relative overflow-hidden shrink-0 rounded-t-2xl">
+                        <div className="aspect-[2/3] bg-midnight relative overflow-hidden shrink-0 rounded-t-2xl">
                           {entry.poster_data ? (
                             <img src={entry.poster_data} alt={entry.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl group-hover:scale-[1.03] transition-transform duration-500 animate-in fade-in" />
                           ) : entry.poster_url ? (
@@ -2748,20 +2928,20 @@ export default function PopcornDashboard() {
                           {/* Top tags */}
                           <div className="absolute top-3 right-3">
                             {entryPlayed && entry.my_rating !== null ? (
-                              <div className={`px-2 py-0.5 rounded-full bg-slate-950/85 border ${isGame ? 'border-emerald-500/30 text-emerald-400 shadow-emerald-500/10' : 'border-orange-500/30 text-orange-400 shadow-orange-500/10'} text-[10px] font-black flex items-center gap-1 backdrop-blur-md shadow-md`}>
-                                <BrandIcon className={`w-3 h-3 ${isGame ? 'fill-emerald-400 text-emerald-400' : 'fill-orange-400 text-orange-400'}`} />
+                              <div className={`px-2 py-0.5 rounded-full bg-midnight/85 border ${isGame ? 'border-cyan-500/30 text-cyan-300 shadow-cyan-500/10' : 'border-indigo-500/30 text-indigo-300 shadow-indigo-500/10'} text-[10px] font-black flex items-center gap-1 backdrop-blur-md shadow-md`}>
+                                <BrandIcon className={`w-3 h-3 ${isGame ? 'fill-cyan-300 text-cyan-300' : 'fill-indigo-300 text-indigo-300'}`} />
                                 <span>{Number(entry.my_rating).toFixed(1)}</span>
                               </div>
                             ) : (
-                              <div className="px-2 py-0.5 rounded-full bg-slate-950/70 border border-white/10 text-[10px] font-black text-yellow-400 flex items-center gap-1 backdrop-blur-md">
-                                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                              <div className="px-2 py-0.5 rounded-full bg-midnight/70 border border-white/10 text-[10px] font-black text-amber-300 flex items-center gap-1 backdrop-blur-md">
+                                <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
                                 <span>{Number(entry.rating || 0).toFixed(1)}</span>
                               </div>
                             )}
                           </div>
 
                           <div className="absolute bottom-3 left-3">
-                            <span className="px-2 py-0.5 rounded bg-slate-950/80 border border-white/5 text-[9px] font-black uppercase tracking-wider text-slate-300 backdrop-blur-sm">
+                            <span className="px-2 py-0.5 rounded bg-midnight/80 border border-white/5 text-[9px] font-black uppercase tracking-wider text-slate-200 backdrop-blur-sm">
                               {isGame ? entry.platform : entry.category}
                             </span>
                           </div>
@@ -2778,12 +2958,12 @@ export default function PopcornDashboard() {
 
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {entry.genres?.split(', ').slice(0, 2).map((g, gIdx) => (
-                                <span key={gIdx} className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-slate-950/50 text-slate-400 border border-white/5">
+                                <span key={gIdx} className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-midnight/50 text-slate-400 border border-white/5">
                                   {g}
                                 </span>
                               ))}
                               {entryPlayed && entry.tags?.split(', ').slice(0, 1).map((t, tIdx) => (
-                                <span key={tIdx} className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${isGame ? 'bg-emerald-600/10 text-emerald-400 border-emerald-500/20' : 'bg-orange-600/10 text-orange-400 border-orange-500/20'}`}>
+                                <span key={tIdx} className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${isGame ? 'bg-cyan-600/10 text-cyan-300 border-cyan-500/20' : 'bg-indigo-600/10 text-indigo-300 border-indigo-500/20'}`}>
                                   {t}
                                 </span>
                               ))}
@@ -2798,20 +2978,20 @@ export default function PopcornDashboard() {
                           <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
                             <button
                               onClick={(e) => { e.stopPropagation(); handleViewClick(entry); }}
-                              className="flex-1 py-2 px-3 bg-slate-950/60 hover:bg-slate-800 border border-white/5 hover:text-white rounded-xl text-[10px] font-bold text-slate-300 transition-all text-center"
+                              className="flex-1 py-2 px-3 bg-midnight/60 hover:bg-slate-800 border border-white/5 hover:text-white rounded-xl text-[10px] font-bold text-slate-200 transition-all text-center"
                             >
                               View Details
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleEditClick(entry); }}
-                              className={`p-2 bg-slate-950/60 border border-white/5 text-slate-400 hover:text-white rounded-xl transition-all ${isGame ? 'hover:bg-emerald-600/10 hover:text-emerald-400' : 'hover:bg-orange-600/10 hover:text-orange-500'}`}
+                              className={`p-2 bg-midnight/60 border border-white/5 text-slate-400 hover:text-white rounded-xl transition-all ${isGame ? 'hover:bg-cyan-600/10 hover:text-cyan-300' : 'hover:bg-indigo-600/10 hover:text-indigo-500'}`}
                               title="Edit"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
-                              className="p-2 bg-slate-950/60 hover:bg-red-500/10 border border-white/5 text-slate-400 hover:text-red-500 rounded-xl transition-all"
+                              className="p-2 bg-midnight/60 hover:bg-red-500/10 border border-white/5 text-slate-400 hover:text-red-500 rounded-xl transition-all"
                               title="Remove"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2831,7 +3011,7 @@ export default function PopcornDashboard() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => prev - 1)}
-                  className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-40 hover:bg-slate-800 transition-all"
+                  className="px-4 py-2 bg-ink border border-white/10 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-40 hover:bg-slate-800 transition-all"
                 >
                   Previous
                 </button>
@@ -2841,7 +3021,7 @@ export default function PopcornDashboard() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => prev + 1)}
-                  className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-40 hover:bg-slate-800 transition-all"
+                  className="px-4 py-2 bg-ink border border-white/10 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-40 hover:bg-slate-800 transition-all"
                 >
                   Next
                 </button>
@@ -2851,7 +3031,7 @@ export default function PopcornDashboard() {
         ) : (
           <div className="space-y-12">
             {/* Global Search & Quick Add */}
-            <div className="bg-slate-900/40 border border-slate-800/80 p-5 rounded-3xl backdrop-blur-md space-y-4">
+            <div className="bg-ink/40 border border-white/10 p-5 rounded-3xl backdrop-blur-md space-y-4">
               <div>
                 <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <Search className={`w-4 h-4 ${textPrimaryColor}`} />
@@ -2872,12 +3052,12 @@ export default function PopcornDashboard() {
                     placeholder={isGame ? "Type game name to search globally..." : "Type movie or web series name to search globally..."}
                     value={globalSearchQuery}
                     onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                    className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl pl-11 pr-10 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
+                    className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl pl-11 pr-10 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
                   />
                   {globalSearchQuery && (
                     <button
                       onClick={() => { setGlobalSearchQuery(''); setGlobalSearchResults([]); }}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-300 font-bold uppercase"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 hover:text-slate-200 font-bold uppercase"
                     >
                       Clear
                     </button>
@@ -2889,7 +3069,7 @@ export default function PopcornDashboard() {
                     <select
                       value={globalSearchLanguage}
                       onChange={(e) => setGlobalSearchLanguage(e.target.value)}
-                      className={`w-full bg-slate-950/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3.5 py-2.5 text-xs text-slate-200 outline-none transition-all cursor-pointer`}
+                      className={`w-full bg-midnight/60 border border-white/5 ${borderPrimaryFocus} rounded-xl px-3.5 py-2.5 text-xs text-slate-200 outline-none transition-all cursor-pointer`}
                     >
                       <option value="All">All Languages</option>
                       {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
@@ -2911,7 +3091,7 @@ export default function PopcornDashboard() {
                   : globalSearchResults.filter(item => globalSearchLanguage === 'All' || item.language === globalSearchLanguage)
                 if (filteredGlobalResults.length === 0) {
                   return (
-                    <div className="text-center py-6 bg-slate-955/20 rounded-2xl border border-dashed border-slate-800/85 p-4">
+                    <div className="text-center py-6 bg-slate-955/20 rounded-2xl border border-dashed border-white/10/85 p-4">
                       <p className="text-slate-500 text-xs">No matches found in search results. Try clearing filters.</p>
                     </div>
                   )
@@ -2929,7 +3109,7 @@ export default function PopcornDashboard() {
                               onClick={() => handleCardClick(item)}
                             >
                               <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
-                              <div className="aspect-[2/3] bg-slate-900 relative overflow-hidden shrink-0 rounded-t-2xl">
+                              <div className="aspect-[2/3] bg-ink relative overflow-hidden shrink-0 rounded-t-2xl">
                                 {item.poster_url ? (
                                   <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
@@ -2938,8 +3118,8 @@ export default function PopcornDashboard() {
                                     <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                                   </div>
                                 )}
-                                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/70 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5 backdrop-blur-md">
-                                  <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-midnight/70 border border-white/10 text-[9px] font-black text-amber-300 flex items-center gap-0.5 backdrop-blur-md">
+                                  <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" />
                                   <span>{Number(item.rating || 0).toFixed(1)}</span>
                                 </div>
                               </div>
@@ -2976,9 +3156,9 @@ export default function PopcornDashboard() {
                                         setShowSeenForm(true)
                                         setShowViewModal(true)
                                       }}
-                                      className="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-[10px] transition-all flex items-center justify-center gap-1 border border-white/5"
+                                      className="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-[10px] transition-all flex items-center justify-center gap-1 border border-white/5"
                                     >
-                                      <BrandIcon className={`w-3 h-3 ${isGame ? 'fill-emerald-400 text-emerald-400' : 'fill-orange-400 text-orange-400'}`} />
+                                      <BrandIcon className={`w-3 h-3 ${isGame ? 'fill-cyan-300 text-cyan-300' : 'fill-indigo-300 text-indigo-300'}`} />
                                       <span>{isGame ? 'Mark as Played' : 'Mark as Seen'}</span>
                                     </button>
                                   )}
@@ -2996,10 +3176,10 @@ export default function PopcornDashboard() {
 
             {/* Dynamic Discovery Explorer */}
             {!isGame && (
-              <div className="bg-slate-900/40 border border-slate-800/80 p-6 rounded-3xl backdrop-blur-md space-y-6">
+              <div className="bg-ink/40 border border-white/10 p-6 rounded-3xl backdrop-blur-md space-y-6">
                 <div>
                   <h3 className="text-base font-black text-white flex items-center gap-2 uppercase tracking-wider">
-                    <Search className="w-4 h-4 text-orange-500" />
+                    <Search className="w-4 h-4 text-indigo-500" />
                     <span>Dynamic Discovery Explorer</span>
                   </h3>
                   <p className="text-slate-400 text-xs mt-1">Combine any category, genre, and language to dynamically discover top titles.</p>
@@ -3011,7 +3191,7 @@ export default function PopcornDashboard() {
                     <select
                       value={discoverCategory}
                       onChange={(e) => setDiscoverCategory(e.target.value)}
-                      className="w-full bg-slate-950/60 border border-white/5 focus:border-orange-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
+                      className="w-full bg-midnight/60 border border-white/5 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
                     >
                       <option value="movie">Movies</option>
                       <option value="tv">Web Series</option>
@@ -3022,7 +3202,7 @@ export default function PopcornDashboard() {
                     <select
                       value={discoverGenre}
                       onChange={(e) => setDiscoverGenre(e.target.value)}
-                      className="w-full bg-slate-950/60 border border-white/5 focus:border-orange-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
+                      className="w-full bg-midnight/60 border border-white/5 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
                     >
                       <option value="All">All Genres</option>
                       {Object.keys(GENRE_IDS).map(g => <option key={g} value={g}>{g}</option>)}
@@ -3033,7 +3213,7 @@ export default function PopcornDashboard() {
                     <select
                       value={discoverLanguage}
                       onChange={(e) => setDiscoverLanguage(e.target.value)}
-                      className="w-full bg-slate-950/60 border border-white/5 focus:border-orange-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
+                      className="w-full bg-midnight/60 border border-white/5 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
                     >
                       <option value="All">All Languages</option>
                       {Object.keys(LANGUAGE_CODES).map(l => <option key={l} value={l}>{l}</option>)}
@@ -3043,25 +3223,25 @@ export default function PopcornDashboard() {
 
                 {discoverLoading ? (
                   <div className="flex flex-col items-center justify-center py-12 gap-3">
-                    <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
                     <p className="text-slate-400 text-xs">Finding matches...</p>
                   </div>
                 ) : discoverItems.length === 0 ? (
-                  <div className="text-center py-12 bg-slate-950/20 rounded-2xl border border-dashed border-slate-800/80 p-6">
+                  <div className="text-center py-12 bg-midnight/20 rounded-2xl border border-dashed border-white/10 p-6">
                     <p className="text-slate-500 text-xs">No matching titles found. Try changing your discovery options.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                       <span>Matches</span>
-                      <span className="px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-500 text-[10px]">{discoverItems.length}</span>
+                      <span className="px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px]">{discoverItems.length}</span>
                     </h4>
 
                     <div className="relative group/row">
                       {/* Left Scroll Button */}
                       <button
                         onClick={() => scrollRow('discover-row', 'left')}
-                        className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
+                        className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 hover:scale-105 active:scale-95"
                         title="Scroll Left"
                       >
                         <ChevronLeft className="w-5 h-5" />
@@ -3082,10 +3262,10 @@ export default function PopcornDashboard() {
                               className="movie-3d-card-container min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] flex-shrink-0"
                             >
                               <div
-                                className="movie-3d-card bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
+                                className="movie-3d-card bg-midnight border border-slate-850 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
                               >
                                 <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
-                                <div className="aspect-[2/3] bg-slate-900 relative overflow-hidden shrink-0 rounded-t-2xl">
+                                <div className="aspect-[2/3] bg-ink relative overflow-hidden shrink-0 rounded-t-2xl">
                                   {item.poster_url ? (
                                     <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
                                   ) : (
@@ -3094,14 +3274,14 @@ export default function PopcornDashboard() {
                                       <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
                                     </div>
                                   )}
-                                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-slate-950/80 border border-white/10 text-[9px] font-black text-yellow-400 flex items-center gap-0.5">
-                                    <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-midnight/80 border border-white/10 text-[9px] font-black text-amber-300 flex items-center gap-0.5">
+                                    <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" />
                                     <span>{Number(item.rating || 0).toFixed(1)}</span>
                                   </div>
                                 </div>
                                 <div className="p-3 flex-1 flex flex-col justify-between">
                                   <div>
-                                    <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug group-hover:text-orange-500 transition-colors" title={item.title}>{item.title}</h4>
+                                    <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug group-hover:text-indigo-500 transition-colors" title={item.title}>{item.title}</h4>
                                     <p className="text-[9px] text-slate-500 mt-0.5">{item.category} • {item.language}</p>
                                   </div>
                                   <button
@@ -3112,7 +3292,7 @@ export default function PopcornDashboard() {
                                     disabled={inWatchlist}
                                     className={`w-full mt-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${inWatchlist
                                       ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                                      : 'bg-orange-600 hover:bg-orange-500 text-white'
+                                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                                       }`}
                                   >
                                     {inWatchlist ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
@@ -3128,7 +3308,7 @@ export default function PopcornDashboard() {
                       {/* Right Scroll Button */}
                       <button
                         onClick={() => scrollRow('discover-row', 'right')}
-                        className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-orange-600 hover:border-orange-500 hover:scale-105 active:scale-95"
+                        className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 hover:scale-105 active:scale-95"
                         title="Scroll Right"
                       >
                         <ChevronRight className="w-5 h-5" />
@@ -3150,18 +3330,18 @@ export default function PopcornDashboard() {
             ) : recommendations ? (
               isGame ? (
                 <div className="space-y-12">
-                  {renderRecommendationRow("Recommended For You 🌟", personalizedRecs, <Sparkles className="w-5 h-5 text-yellow-400" />)}
+                  {renderRecommendationRow("Recommended For You 🌟", personalizedRecs, <Sparkles className="w-5 h-5 text-amber-300" />)}
                   {renderRecommendationRow("Recently Released Games 🚀", recommendations.recently_released, <Rocket className="w-5 h-5 text-cyan-400" />)}
                   {renderRecommendationRow("Popular Upcoming Games 🚀", recommendations.upcoming, <Rocket className="w-5 h-5 text-purple-400" />)}
-                  {renderRecommendationRow("Trending Games 🔥", recommendations.trending_games, <TrendingUp className="w-5 h-5 text-emerald-400" />, true)}
+                  {renderRecommendationRow("Trending Games 🔥", recommendations.trending_games, <TrendingUp className="w-5 h-5 text-cyan-300" />, true)}
                   {renderRecommendationRow("Top Role-Playing Games 🧙", recommendations.top_rpgs, <Gamepad2 className="w-5 h-5 text-violet-500" />)}
                   {renderRecommendationRow("Action Hits 💥", recommendations.action_hits, <Gamepad className="w-5 h-5 text-teal-400" />)}
                   {renderRecommendationRow("Indie Gems 💡", recommendations.indie_hits, <Sparkles className="w-5 h-5 text-pink-400" />)}
                   {renderRecommendationRow("Strategy Masters 🧠", recommendations.strategy_hits, <Trophy className="w-5 h-5 text-amber-400" />)}
                   {renderRecommendationRow("Shooter Games 🎯", recommendations.shooter_hits, <Gamepad className="w-5 h-5 text-red-400" />)}
                   {renderRecommendationRow("Puzzle & Brain Games 🧩", recommendations.puzzle_hits, <Sparkles className="w-5 h-5 text-blue-400" />)}
-                  {renderRecommendationRow("Simulation Games 🌍", recommendations.simulation_hits, <Globe className="w-5 h-5 text-emerald-400" />)}
-                  {renderRecommendationRow("Adventure Games 🗺️", recommendations.adventure_hits, <Rocket className="w-5 h-5 text-orange-400" />)}
+                  {renderRecommendationRow("Simulation Games 🌍", recommendations.simulation_hits, <Globe className="w-5 h-5 text-cyan-300" />)}
+                  {renderRecommendationRow("Adventure Games 🗺️", recommendations.adventure_hits, <Rocket className="w-5 h-5 text-indigo-300" />)}
                   {renderRecommendationRow("Sports Games ⚽", recommendations.sports_hits, <Trophy className="w-5 h-5 text-green-400" />)}
                   {renderRecommendationRow("Horror Games 👻", recommendations.horror_hits, <Gamepad className="w-5 h-5 text-slate-400" />)}
                   {renderRecommendationRow("Fighting Games 🥊", recommendations.fighting_hits, <Gamepad2 className="w-5 h-5 text-rose-400" />)}
@@ -3172,10 +3352,10 @@ export default function PopcornDashboard() {
                 </div>
               ) : (
                 <div className="space-y-12">
-                  {renderRecommendationRow("Recommended For You 🌟", personalizedRecs, <Sparkles className="w-5 h-5 text-yellow-400" />)}
+                  {renderRecommendationRow("Recommended For You 🌟", personalizedRecs, <Sparkles className="w-5 h-5 text-amber-300" />)}
                   {renderRecommendationRow("Recently Released Movies 🚀", recommendations.recently_released, <Rocket className="w-5 h-5 text-cyan-400" />)}
                   {renderRecommendationRow("Popular Upcoming Movies & Shows 🚀", recommendations.upcoming, <Rocket className="w-5 h-5 text-purple-400" />)}
-                  {renderRecommendationRow("Trending Top 50 in the World 🔥", recommendations.trending_top_10, <TrendingUp className="w-5 h-5 text-orange-500" />, true)}
+                  {renderRecommendationRow("Trending Top 50 in the World 🔥", recommendations.trending_top_10, <TrendingUp className="w-5 h-5 text-indigo-500" />, true)}
                   {renderRecommendationRow("Top Rated Movies of All Time ⭐", recommendations.top_rated, <Star className="w-5 h-5 text-yellow-500" />)}
                   {renderRecommendationRow("Top Web Series 📺", recommendations.web_series, <Tv className="w-5 h-5 text-purple-500" />)}
                   {renderRecommendationRow("Popular Series Now 🍿", recommendations.popular_series, <Tv className="w-5 h-5 text-indigo-400" />)}
@@ -3191,16 +3371,16 @@ export default function PopcornDashboard() {
                   {renderRecommendationRow("Top Comedy Movies 😂", recommendations.comedy, <Film className="w-5 h-5 text-blue-500" />)}
                   {renderRecommendationRow("Top Drama Movies 🎭", recommendations.drama, <Film className="w-5 h-5 text-violet-400" />)}
                   {renderRecommendationRow("Top Romance Movies 💕", recommendations.romance, <Film className="w-5 h-5 text-pink-400" />)}
-                  {renderRecommendationRow("Top Adventure Movies 🗺️", recommendations.adventure, <Rocket className="w-5 h-5 text-orange-400" />)}
+                  {renderRecommendationRow("Top Adventure Movies 🗺️", recommendations.adventure, <Rocket className="w-5 h-5 text-indigo-300" />)}
                   {renderRecommendationRow("Top Fantasy Movies ✨", recommendations.fantasy, <Sparkles className="w-5 h-5 text-purple-400" />)}
-                  {renderRecommendationRow("Top Documentaries 🎬", recommendations.documentary, <Film className="w-5 h-5 text-emerald-400" />)}
+                  {renderRecommendationRow("Top Documentaries 🎬", recommendations.documentary, <Film className="w-5 h-5 text-cyan-300" />)}
 
                   {/* Language Rows */}
-                  {renderRecommendationRow("Telugu Hits 🎬", recommendations.telugu, <Globe className="w-5 h-5 text-emerald-500" />)}
-                  {renderRecommendationRow("Hindi Hits 🎬", recommendations.hindi, <Globe className="w-5 h-5 text-orange-400" />)}
+                  {renderRecommendationRow("Telugu Hits 🎬", recommendations.telugu, <Globe className="w-5 h-5 text-cyan-500" />)}
+                  {renderRecommendationRow("Hindi Hits 🎬", recommendations.hindi, <Globe className="w-5 h-5 text-indigo-300" />)}
                   {renderRecommendationRow("English Hits 🎬", recommendations.english, <Globe className="w-5 h-5 text-blue-400" />)}
                   {renderRecommendationRow("Tamil Hits 🎬", recommendations.tamil, <Globe className="w-5 h-5 text-red-400" />)}
-                  {renderRecommendationRow("Kannada Hits 🎬", recommendations.kannada, <Globe className="w-5 h-5 text-yellow-400" />)}
+                  {renderRecommendationRow("Kannada Hits 🎬", recommendations.kannada, <Globe className="w-5 h-5 text-amber-300" />)}
                   {renderRecommendationRow("Korean Hits 🇰🇷", recommendations.korean, <Globe className="w-5 h-5 text-pink-400" />)}
                   {renderRecommendationRow("French Hits 🇫🇷", recommendations.french, <Globe className="w-5 h-5 text-indigo-400" />)}
                   {renderRecommendationRow("Spanish Hits 🇪🇸", recommendations.spanish, <Globe className="w-5 h-5 text-amber-400" />)}
@@ -3222,17 +3402,17 @@ export default function PopcornDashboard() {
         const entryPlayed = isGame ? selectedEntry.is_played : selectedEntry.is_seen
         return (
           <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowViewModal(false)} />
-            <div className="relative bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95 duration-200">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowViewModal(false)} />
+            <div className="relative glass-strong w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-in zoom-in-95 duration-200">
 
               {/* Left Poster */}
-              <div className="w-full md:w-2/5 h-48 md:h-auto bg-slate-950 relative shrink-0 overflow-hidden">
+              <div className="w-full md:w-2/5 h-48 md:h-auto bg-midnight relative shrink-0 overflow-hidden">
                 {selectedEntry.poster_data ? (
                   <img src={selectedEntry.poster_data} className="w-full h-full object-cover" alt={selectedEntry.title} />
                 ) : selectedEntry.poster_url ? (
                   <img src={selectedEntry.poster_url} className="w-full h-full object-cover" alt={selectedEntry.title} />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-center p-4 bg-slate-950">
+                  <div className="w-full h-full flex flex-col items-center justify-center text-center p-4 bg-midnight">
                     {isGame ? <Gamepad className="w-16 h-16 text-slate-800 mb-2" /> : <Film className="w-16 h-16 text-slate-800 mb-2" />}
                     <span className="text-xs font-bold text-slate-600 uppercase">{selectedEntry.title}</span>
                   </div>
@@ -3256,12 +3436,12 @@ export default function PopcornDashboard() {
                         <span>{isGame ? 'RAWG' : 'TMDB'}: {Number(selectedEntry.rating || 0).toFixed(1)}</span>
                       </div>
                       {entryPlayed && selectedEntry.my_rating !== null && (
-                        <div className={`flex items-center gap-1.5 text-xs font-bold ${isGame ? 'text-emerald-400 bg-emerald-500/5 border-emerald-500/15' : 'text-orange-400 bg-orange-500/5 border-orange-500/15'} px-2 py-0.5 rounded-lg border`}>
-                          <BrandIcon className={`w-4 h-4 ${isGame ? 'fill-emerald-400 text-emerald-400' : 'fill-orange-400 text-orange-400'}`} />
+                        <div className={`flex items-center gap-1.5 text-xs font-bold ${isGame ? 'text-cyan-300 bg-cyan-500/5 border-cyan-500/15' : 'text-indigo-300 bg-indigo-500/5 border-indigo-500/15'} px-2 py-0.5 rounded-lg border`}>
+                          <BrandIcon className={`w-4 h-4 ${isGame ? 'fill-cyan-300 text-cyan-300' : 'fill-indigo-300 text-indigo-300'}`} />
                           <span>My Rating: {Number(selectedEntry.my_rating).toFixed(1)}</span>
                         </div>
                       )}
-                      <span className={`px-2.5 py-0.5 rounded ${isGame ? 'bg-emerald-600/10 border-emerald-500/20 text-emerald-400' : 'bg-orange-600/10 border-orange-500/20 text-orange-500'} text-[10px] font-bold uppercase`}>
+                      <span className={`px-2.5 py-0.5 rounded ${isGame ? 'bg-cyan-600/10 border-cyan-500/20 text-cyan-300' : 'bg-indigo-600/10 border-indigo-500/20 text-indigo-500'} text-[10px] font-bold uppercase`}>
                         {isGame ? selectedEntry.platform : selectedEntry.category}
                       </span>
                     </div>
@@ -3289,7 +3469,7 @@ export default function PopcornDashboard() {
                   {isGame && selectedEntry.developers && (
                     <div className="col-span-2 border-t border-white/5 pt-2">
                       <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Developers</p>
-                      <p className="text-xs font-semibold text-emerald-450 mt-0.5">{selectedEntry.developers}</p>
+                      <p className="text-xs font-semibold text-cyan-400 mt-0.5">{selectedEntry.developers}</p>
                     </div>
                   )}
                   {isGame && selectedEntry.website && (
@@ -3308,7 +3488,7 @@ export default function PopcornDashboard() {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Genres</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedEntry.genres.split(', ').map(g => (
-                        <span key={g} className="px-3 py-1 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-semibold text-slate-300">
+                        <span key={g} className="px-3 py-1 rounded-xl bg-midnight/60 border border-white/10 text-xs font-semibold text-slate-200">
                           {g}
                         </span>
                       ))}
@@ -3320,20 +3500,20 @@ export default function PopcornDashboard() {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Synopsis</p>
                   {loadingDescription ? (
                     <div className="flex items-center gap-2 py-2">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-300" />
                       <span className="text-xs text-slate-500">Fetching game description...</span>
                     </div>
                   ) : (
-                    <p className="text-slate-300 text-sm leading-relaxed italic">
+                    <p className="text-slate-200 text-sm leading-relaxed italic">
                       "{selectedEntry.synopsis || 'No synopsis provided.'}"
                     </p>
                   )}
                 </div>
 
                 {entryPlayed && (
-                  <div className={`p-5 rounded-3xl border space-y-4 ${isGame ? 'bg-emerald-500/5 border-emerald-500/15' : 'bg-orange-500/5 border-orange-500/15'}`}>
-                    <div className={`flex justify-between items-center border-b pb-2.5 ${isGame ? 'border-emerald-500/10' : 'border-orange-500/10'}`}>
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>
+                  <div className={`p-5 rounded-3xl border space-y-4 ${isGame ? 'bg-cyan-500/5 border-cyan-500/15' : 'bg-indigo-500/5 border-indigo-500/15'}`}>
+                    <div className={`flex justify-between items-center border-b pb-2.5 ${isGame ? 'border-cyan-500/10' : 'border-indigo-500/10'}`}>
+                      <p className={`text-[10px] font-black uppercase tracking-widest ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`}>
                         {isGame ? 'My Played Review' : 'My Seen Review'}
                       </p>
                       {selectedEntry.my_rating !== null && (
@@ -3346,7 +3526,7 @@ export default function PopcornDashboard() {
                     {selectedEntry.tags && (
                       <div className="flex flex-wrap gap-1.5">
                         {selectedEntry.tags.split(', ').map(tag => (
-                          <span key={tag} className={`px-2.5 py-1 rounded-xl border text-[9px] font-bold ${isGame ? 'bg-emerald-600/10 border-emerald-500/20 text-emerald-400' : 'bg-orange-600/10 border-orange-500/20 text-orange-400'}`}>
+                          <span key={tag} className={`px-2.5 py-1 rounded-xl border text-[9px] font-bold ${isGame ? 'bg-cyan-600/10 border-cyan-500/20 text-cyan-300' : 'bg-indigo-600/10 border-indigo-500/20 text-indigo-300'}`}>
                             {tag}
                           </span>
                         ))}
@@ -3360,19 +3540,19 @@ export default function PopcornDashboard() {
                 )}
 
                 {!entryPlayed && selectedEntry.reasons_for_liking && (
-                  <div className={`p-4 rounded-2xl border space-y-1.5 ${isGame ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-orange-500/10 border-orange-500/10'}`}>
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>Personal Note</p>
+                  <div className={`p-4 rounded-2xl border space-y-1.5 ${isGame ? 'bg-cyan-500/5 border-cyan-500/10' : 'bg-indigo-500/10 border-indigo-500/10'}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`}>Personal Note</p>
                     <p className="text-slate-200 text-xs leading-relaxed">{selectedEntry.reasons_for_liking}</p>
                   </div>
                 )}
 
                 <div className="space-y-4 pt-4 border-t border-white/5">
                   {showSeenForm ? (
-                    <div className="p-5 rounded-3xl bg-slate-950/45 border border-slate-800/80 space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
+                    <div className="p-5 rounded-3xl bg-midnight/45 border border-white/10 space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
 
                       {/* Rate This Header */}
                       <div className="space-y-1">
-                        <h4 className={`text-xs font-black uppercase tracking-wider ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>
+                        <h4 className={`text-xs font-black uppercase tracking-wider ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`}>
                           {isGame ? 'Rate This Game' : 'Rate This Movie'}
                         </h4>
                         <p className="text-[10px] text-slate-400">How would you rate your experience?</p>
@@ -3385,23 +3565,23 @@ export default function PopcornDashboard() {
                         </div>
 
                         {/* Dotted border feedback indicator ring */}
-                        <div className={`relative w-20 h-20 flex-shrink-0 flex flex-col items-center justify-center rounded-full bg-slate-900 border border-dashed transition-all duration-300 ${seenRating > 4.5
-                          ? (isGame ? 'border-emerald-400 shadow-[0_0_22px_rgba(16,185,129,0.4)] scale-105' : 'border-yellow-400 shadow-[0_0_22px_rgba(253,224,71,0.4)] scale-105')
-                          : (isGame ? 'border-emerald-500/40 shadow-lg shadow-emerald-500/5' : 'border-orange-500/40 shadow-lg shadow-orange-500/5')
+                        <div className={`relative w-20 h-20 flex-shrink-0 flex flex-col items-center justify-center rounded-full bg-ink border border-dashed transition-all duration-300 ${seenRating > 4.5
+                          ? (isGame ? 'border-cyan-300 shadow-[0_0_22px_rgba(16,185,129,0.4)] scale-105' : 'border-amber-300 shadow-[0_0_22px_rgba(253,224,71,0.4)] scale-105')
+                          : (isGame ? 'border-cyan-500/40 shadow-lg shadow-cyan-500/5' : 'border-indigo-500/40 shadow-lg shadow-indigo-500/5')
                           }`}>
                           <div className={`absolute inset-1 rounded-full border border-dotted transition-all duration-300 ${seenRating > 4.5
-                            ? (isGame ? 'border-emerald-450/50 animate-spin-dotted-fast' : 'border-yellow-400/50 animate-spin-dotted-fast')
-                            : (isGame ? 'border-emerald-500/20 animate-spin-dotted' : 'border-orange-500/20 animate-spin-dotted')
+                            ? (isGame ? 'border-cyan-400/50 animate-spin-dotted-fast' : 'border-amber-300/50 animate-spin-dotted-fast')
+                            : (isGame ? 'border-cyan-500/20 animate-spin-dotted' : 'border-indigo-500/20 animate-spin-dotted')
                             }`} />
                           <span className={`text-2xl font-black transition-all duration-300 ${seenRating > 4.5
-                            ? (isGame ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.55)]' : 'text-yellow-400 animate-gold-pulse drop-shadow-[0_0_12px_rgba(253,224,71,0.55)]')
-                            : (isGame ? 'text-emerald-400' : 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]')
+                            ? (isGame ? 'text-cyan-300 drop-shadow-[0_0_12px_rgba(16,185,129,0.55)]' : 'text-amber-300 animate-gold-pulse drop-shadow-[0_0_12px_rgba(253,224,71,0.55)]')
+                            : (isGame ? 'text-cyan-300' : 'text-indigo-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]')
                             }`}>
                             {seenRating.toFixed(1)}
                           </span>
                           <span className={`text-[8px] font-black uppercase tracking-wider mt-0.5 transition-colors duration-300 ${seenRating > 4.5
-                            ? (isGame ? 'text-emerald-400' : 'text-yellow-400')
-                            : (isGame ? 'text-emerald-400/80' : 'text-orange-400/80')
+                            ? (isGame ? 'text-cyan-300' : 'text-amber-300')
+                            : (isGame ? 'text-cyan-300/80' : 'text-indigo-300/80')
                             }`}>
                             {getRatingLabel(seenRating)}
                           </span>
@@ -3411,7 +3591,7 @@ export default function PopcornDashboard() {
                       {/* Share Your Thoughts review textarea */}
                       <div className="space-y-3">
                         <div className="space-y-1">
-                          <h5 className={`text-[11px] font-black uppercase tracking-wider ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>
+                          <h5 className={`text-[11px] font-black uppercase tracking-wider ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`}>
                             Share Your Thoughts
                           </h5>
                           <p className="text-[10px] text-slate-400">
@@ -3421,7 +3601,7 @@ export default function PopcornDashboard() {
 
                         <div className="flex gap-4 items-start">
                           {/* Rocket / Controller Avatar */}
-                          <div className={`w-11 h-11 rounded-full bg-slate-950/80 border border-slate-800 flex items-center justify-center ${isGame ? 'text-emerald-400' : 'text-orange-500'} shadow-inner shrink-0 mt-1`}>
+                          <div className={`w-11 h-11 rounded-full bg-midnight/80 border border-white/10 flex items-center justify-center ${isGame ? 'text-cyan-300' : 'text-indigo-500'} shadow-inner shrink-0 mt-1`}>
                             {isGame ? <Gamepad className="w-5 h-5 animate-pulse" /> : <Rocket className="w-5 h-5 animate-pulse" />}
                           </div>
 
@@ -3433,7 +3613,7 @@ export default function PopcornDashboard() {
                               value={seenComments}
                               onChange={(e) => setSeenComments(e.target.value)}
                               placeholder="Write your review here..."
-                              className={`w-full bg-slate-950/60 border border-slate-800/80 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-4 py-3 text-xs text-slate-200 outline-none transition-all resize-none min-h-[90px]`}
+                              className={`w-full bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-4 py-3 text-xs text-slate-200 outline-none transition-all resize-none min-h-[90px]`}
                             />
                             <div className="absolute bottom-2.5 right-3 text-[9px] font-bold text-slate-500">
                               {seenComments.length}/500
@@ -3444,7 +3624,7 @@ export default function PopcornDashboard() {
 
                       {/* Add Tags section */}
                       <div className="space-y-3">
-                        <h5 className={`text-[11px] font-black uppercase tracking-wider ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>
+                        <h5 className={`text-[11px] font-black uppercase tracking-wider ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`}>
                           Add Tags (Optional)
                         </h5>
                         <div className="flex flex-wrap gap-2">
@@ -3454,17 +3634,17 @@ export default function PopcornDashboard() {
                               'Mind-blowing': 'bg-purple-500/10 border-purple-500/30 text-purple-400',
                               'Emotional': 'bg-teal-500/10 border-teal-500/30 text-teal-400',
                               'Suspenseful': 'bg-red-500/10 border-red-500/30 text-red-400',
-                              'Inspirational': 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
+                              'Inspirational': 'bg-yellow-500/10 border-yellow-500/30 text-amber-300',
                               'Masterpiece': 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400',
-                              'Must-watch': 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-                              'Must-play': 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+                              'Must-watch': 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300',
+                              'Must-play': 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300',
                               'Hilarious': 'bg-pink-500/10 border-pink-500/30 text-pink-400',
                               'Heartwarming': 'bg-sky-500/10 border-sky-500/30 text-sky-400',
                               'Addictive': 'bg-red-500/10 border-red-500/30 text-red-400',
-                              'Challenging': 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
+                              'Challenging': 'bg-yellow-500/10 border-yellow-500/30 text-amber-300',
                               'Relaxing': 'bg-sky-500/10 border-sky-500/30 text-sky-400'
                             }
-                            const colorClass = activeColors[tag] || (isGame ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-orange-500/10 border-orange-500/30 text-orange-400')
+                            const colorClass = activeColors[tag] || (isGame ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300' : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300')
                             return (
                               <button
                                 key={tag}
@@ -3476,7 +3656,7 @@ export default function PopcornDashboard() {
                                 }}
                                 className={`px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all ${active
                                   ? `${colorClass} shadow-md`
-                                  : 'bg-slate-950/60 border-white/5 text-slate-400 hover:border-slate-800'
+                                  : 'bg-midnight/60 border-white/5 text-slate-400 hover:border-white/10'
                                   }`}
                               >
                                 {tag}
@@ -3498,10 +3678,20 @@ export default function PopcornDashboard() {
                         <button
                           type="button"
                           onClick={handleSaveSeen}
-                          className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-bold text-xs transition-all shadow-lg active:scale-[0.98] ${isGame ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/15' : 'bg-orange-600 hover:bg-orange-500 shadow-orange-600/15'}`}
+                          disabled={isSavingSeen}
+                          className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-bold text-xs transition-all shadow-lg active:scale-[0.98] ${isGame ? 'bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/15' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15'} disabled:opacity-50`}
                         >
-                          <Bookmark className="w-4 h-4 fill-white/10" />
-                          <span>{selectedEntry.id ? (isGame ? 'Save Played Review' : 'Save Seen Review') : (isGame ? 'Add to Playlist as Played' : 'Add to Watchlist as Seen')}</span>
+                          {isSavingSeen ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>Saving Review...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Bookmark className="w-4 h-4 fill-white/10" />
+                              <span>{selectedEntry.id ? (isGame ? 'Save Played Review' : 'Save Seen Review') : (isGame ? 'Add to Playlist as Played' : 'Add to Watchlist as Seen')}</span>
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -3510,37 +3700,40 @@ export default function PopcornDashboard() {
                       {/* Segmented Status Control */}
                       <div className="space-y-2">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">My Status</p>
-                        <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5 items-center max-w-md shadow-inner">
+                        <div className="flex bg-midnight/80 p-1 rounded-2xl border border-white/5 items-center max-w-md shadow-inner">
                           <button
                             onClick={() => handleUpdateStatus('watchlist')}
+                            disabled={updatingStatusType !== null}
                             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${!selectedEntry.is_seen && !selectedEntry.is_played && !(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
-                                ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
-                                : 'text-slate-400 hover:text-slate-200'
-                              }`}
+                              ? (isGame ? 'bg-cyan-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md')
+                              : 'text-slate-400 hover:text-slate-200'
+                              } disabled:opacity-50`}
                           >
-                            <Bookmark className="w-3.5 h-3.5" />
+                            {updatingStatusType === 'watchlist' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bookmark className="w-3.5 h-3.5" />}
                             <span>{isGame ? 'Backlog' : 'Watchlist'}</span>
                           </button>
 
                           <button
                             onClick={() => handleUpdateStatus('watching')}
+                            disabled={updatingStatusType !== null}
                             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame ? selectedEntry.is_playing : selectedEntry.is_watching
-                                ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
-                                : 'text-slate-400 hover:text-slate-200'
-                              }`}
+                              ? (isGame ? 'bg-cyan-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md')
+                              : 'text-slate-400 hover:text-slate-200'
+                              } disabled:opacity-50`}
                           >
-                            {isGame ? <Gamepad className="w-3.5 h-3.5" /> : <Tv className="w-3.5 h-3.5" />}
+                            {updatingStatusType === 'watching' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (isGame ? <Gamepad className="w-3.5 h-3.5" /> : <Tv className="w-3.5 h-3.5" />)}
                             <span>{isGame ? 'Playing' : 'Watching'}</span>
                           </button>
 
                           <button
                             onClick={() => handleUpdateStatus('seen')}
+                            disabled={updatingStatusType !== null}
                             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame ? selectedEntry.is_played : selectedEntry.is_seen
-                                ? (isGame ? 'bg-emerald-600 text-white shadow-md' : 'bg-orange-600 text-white shadow-md')
-                                : 'text-slate-400 hover:text-slate-200'
-                              }`}
+                              ? (isGame ? 'bg-cyan-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md')
+                              : 'text-slate-400 hover:text-slate-200'
+                              } disabled:opacity-50`}
                           >
-                            <Trophy className="w-3.5 h-3.5" />
+                            {updatingStatusType === 'seen' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trophy className="w-3.5 h-3.5" />}
                             <span>{isGame ? 'Played' : 'Seen'}</span>
                           </button>
                         </div>
@@ -3564,13 +3757,18 @@ export default function PopcornDashboard() {
                                   key={group.id}
                                   type="button"
                                   onClick={() => handleToggleGroup(group)}
-                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${isMember
-                                      ? (isGame ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400 shadow-md' : 'bg-orange-600/20 border-orange-500 text-orange-400 shadow-md')
-                                      : 'bg-slate-950/60 border-white/5 text-slate-400 hover:border-slate-800'
-                                    }`}
+                                  disabled={togglingGroupId !== null}
+                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all flex items-center gap-1.5 ${isMember
+                                    ? (isGame ? 'bg-cyan-600/20 border-cyan-500 text-cyan-300 shadow-md' : 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-md')
+                                    : 'bg-midnight/60 border-white/5 text-slate-400 hover:border-white/10'
+                                    } disabled:opacity-60`}
                                 >
-                                  {isMember ? '✓ ' : '+ '}
-                                  {group.name}
+                                  {togglingGroupId === group.id ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    isMember ? '✓ ' : '+ '
+                                  )}
+                                  <span>{group.name}</span>
                                 </button>
                               )
                             })
@@ -3583,7 +3781,7 @@ export default function PopcornDashboard() {
                         <div className="flex gap-2 pt-2">
                           <button
                             onClick={() => { handleEditClick(selectedEntry); setShowViewModal(false); }}
-                            className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold transition-all text-slate-300 flex items-center justify-center gap-1.5"
+                            className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold transition-all text-slate-200 flex items-center justify-center gap-1.5"
                             title="Edit details"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -3591,10 +3789,11 @@ export default function PopcornDashboard() {
                           </button>
                           <button
                             onClick={() => handleDelete(selectedEntry.id)}
-                            className="py-2.5 px-4 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                            disabled={isDeleting}
+                            className="py-2.5 px-4 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                             title="Remove"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                             <span>Remove</span>
                           </button>
                         </div>
@@ -3605,12 +3804,12 @@ export default function PopcornDashboard() {
 
                 {/* Similar Items Row */}
                 <div className="space-y-4 pt-6 border-t border-white/5">
-                  <h4 className={`text-xs font-black uppercase tracking-wider ${isGame ? 'text-emerald-400' : 'text-orange-500'}`}>
+                  <h4 className={`text-xs font-black uppercase tracking-wider ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`}>
                     {isGame ? 'Similar Games You May Like' : 'Similar Movies & Shows'}
                   </h4>
                   {similarItemsLoading ? (
                     <div className="flex items-center gap-3 py-6 justify-center">
-                      <Loader2 className={`w-5 h-5 animate-spin ${isGame ? 'text-emerald-400' : 'text-orange-500'}`} />
+                      <Loader2 className={`w-5 h-5 animate-spin ${isGame ? 'text-cyan-300' : 'text-indigo-500'}`} />
                       <span className="text-xs text-slate-500">Finding similar titles...</span>
                     </div>
                   ) : similarItems.length > 0 ? (
@@ -3621,7 +3820,7 @@ export default function PopcornDashboard() {
                           onClick={() => handleCardClick(item)}
                           className="w-[110px] min-w-[110px] bg-slate-955 border border-slate-850 rounded-xl p-2 cursor-pointer hover:border-slate-750 transition-all shrink-0 group/similar"
                         >
-                          <div className="aspect-[2/3] bg-slate-900 rounded-lg overflow-hidden relative mb-2">
+                          <div className="aspect-[2/3] bg-ink rounded-lg overflow-hidden relative mb-2">
                             {item.poster_url ? (
                               <img src={item.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={item.title} />
                             ) : (
@@ -3652,10 +3851,10 @@ export default function PopcornDashboard() {
       {/* ADD / EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)} />
+          <div className="relative glass-strong w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-950/40">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-midnight/40">
               <div>
                 <h2 className="text-xl font-black text-white uppercase">{editingEntry ? (isGame ? 'Edit Game Item' : 'Edit Watchlist Item') : (isGame ? 'Add to Playlist' : 'Add to Watchlist')}</h2>
                 <p className="text-slate-400 text-xs mt-1">{isGame ? 'Search RAWG automatically or enter manually.' : 'Search TMDB automatically or enter manually.'}</p>
@@ -3679,23 +3878,23 @@ export default function PopcornDashboard() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={isGame ? "Type keyword or title (e.g. Witcher, GTA)..." : "Type keyword or title (e.g. Inception, Naruto)..."}
-                      className={`w-full bg-slate-950/50 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-2xl pl-10 pr-4 py-3 text-xs text-slate-200 outline-none transition-all`}
+                      className={`w-full bg-midnight/50 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-2xl pl-10 pr-4 py-3 text-xs text-slate-200 outline-none transition-all`}
                     />
                     {isSearchingTmdb && (
-                      <Loader2 className={`absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin ${isGame ? 'text-emerald-500' : 'text-orange-500'}`} />
+                      <Loader2 className={`absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin ${isGame ? 'text-cyan-500' : 'text-indigo-500'}`} />
                     )}
                   </div>
 
                   {/* Results list overlay */}
                   {tmdbSearchResults.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-2 bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden z-30 divide-y divide-white/5 animate-in fade-in duration-200">
+                    <div className="absolute left-0 right-0 top-full mt-2 bg-midnight border border-white/10 rounded-2xl shadow-xl overflow-hidden z-30 divide-y divide-white/5 animate-in fade-in duration-200">
                       {tmdbSearchResults.map((item, idx) => (
                         <div
                           key={idx}
                           onClick={() => handleSelectAutocompleteItem(item)}
-                          className="flex items-center gap-3 p-3 hover:bg-slate-900 cursor-pointer transition-colors"
+                          className="flex items-center gap-3 p-3 hover:bg-ink cursor-pointer transition-colors"
                         >
-                          <div className="w-10 h-14 bg-slate-900 rounded overflow-hidden shrink-0">
+                          <div className="w-10 h-14 bg-ink rounded overflow-hidden shrink-0">
                             {item.poster_url ? (
                               <img src={item.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Search item" />
                             ) : (
@@ -3721,7 +3920,7 @@ export default function PopcornDashboard() {
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Poster Art</label>
 
                   {/* Poster Image preview box */}
-                  <div className="aspect-[2/3] w-40 md:w-full mx-auto bg-slate-950 border-2 border-dashed border-slate-800 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-4 relative group">
+                  <div className="aspect-[2/3] w-40 md:w-full mx-auto bg-midnight border-2 border-dashed border-white/10 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-4 relative group">
                     {formData.poster_data ? (
                       <>
                         <img src={formData.poster_data} alt="Upload preview" className="w-full h-full object-cover" />
@@ -3747,9 +3946,9 @@ export default function PopcornDashboard() {
                     ) : (
                       <>
                         {isGame ? (
-                          <Gamepad2 className={`w-10 h-10 text-slate-800 mb-2 group-hover:text-emerald-500 transition-colors`} />
+                          <Gamepad2 className={`w-10 h-10 text-slate-800 mb-2 group-hover:text-cyan-500 transition-colors`} />
                         ) : (
-                          <ImageIcon className={`w-10 h-10 text-slate-800 mb-2 group-hover:text-orange-500 transition-colors`} />
+                          <ImageIcon className={`w-10 h-10 text-slate-800 mb-2 group-hover:text-indigo-500 transition-colors`} />
                         )}
                         <p className="text-[11px] text-slate-500 text-center px-4">Upload poster image or paste URL link below</p>
                       </>
@@ -3763,7 +3962,7 @@ export default function PopcornDashboard() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileUpload}
-                      className={`w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold ${isGame ? 'file:bg-emerald-600/10 file:text-emerald-500 hover:file:bg-emerald-600/20' : 'file:bg-orange-600/10 file:text-orange-500 hover:file:bg-orange-600/20'} cursor-pointer`}
+                      className={`w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold ${isGame ? 'file:bg-cyan-600/10 file:text-cyan-500 hover:file:bg-cyan-600/20' : 'file:bg-indigo-600/10 file:text-indigo-500 hover:file:bg-indigo-600/20'} cursor-pointer`}
                     />
                   </div>
 
@@ -3776,7 +3975,7 @@ export default function PopcornDashboard() {
                       value={formData.poster_url}
                       onChange={handleInputChange}
                       placeholder="https://example.com/poster.jpg..."
-                      className={`w-full bg-slate-950/60 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all`}
+                      className={`w-full bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all`}
                     />
                   </div>
                 </div>
@@ -3793,7 +3992,7 @@ export default function PopcornDashboard() {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder={isGame ? "e.g. Witcher 3" : "e.g. Interstellar"}
-                      className={`w-full bg-slate-950/60 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                      className={`w-full bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                     />
                   </div>
 
@@ -3807,7 +4006,7 @@ export default function PopcornDashboard() {
                         name="platform"
                         value={formData.platform}
                         onChange={handleInputChange}
-                        className={`w-full bg-slate-950/60 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                        className={`w-full bg-midnight/60 border border-white/10 focus:border-cyan-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                       >
                         {GAME_PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
@@ -3816,7 +4015,7 @@ export default function PopcornDashboard() {
                         name="category"
                         value={formData.category}
                         onChange={handleInputChange}
-                        className={`w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
+                        className={`w-full bg-midnight/60 border border-white/10 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all`}
                       >
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -3831,7 +4030,7 @@ export default function PopcornDashboard() {
                         name="language"
                         value={formData.language}
                         onChange={handleInputChange}
-                        className="w-full bg-slate-950/60 border border-slate-800 focus:border-orange-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
+                        className="w-full bg-midnight/60 border border-white/10 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-xs text-slate-200 outline-none transition-all"
                       >
                         {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
@@ -3854,7 +4053,7 @@ export default function PopcornDashboard() {
                   {/* Genres checkboxes */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Genres</label>
-                    <div className="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto border border-slate-850 p-2.5 bg-slate-950/40 rounded-xl">
+                    <div className="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto border border-slate-850 p-2.5 bg-midnight/40 rounded-xl">
                       {(isGame ? GAME_GENRES : GENRES).map((g) => {
                         const active = formData.genres.includes(g)
                         return (
@@ -3863,8 +4062,8 @@ export default function PopcornDashboard() {
                             type="button"
                             onClick={() => handleGenreToggle(g)}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${active
-                              ? (isGame ? 'bg-emerald-600/10 border-emerald-500/25 text-emerald-500' : 'bg-orange-600/10 border-orange-500/25 text-orange-500')
-                              : 'bg-slate-950 border-white/5 text-slate-400 hover:border-slate-700'
+                              ? (isGame ? 'bg-cyan-600/10 border-cyan-500/25 text-cyan-500' : 'bg-indigo-600/10 border-indigo-500/25 text-indigo-500')
+                              : 'bg-midnight border-white/5 text-slate-400 hover:border-white/10'
                               }`}
                           >
                             {g}
@@ -3883,7 +4082,7 @@ export default function PopcornDashboard() {
                       value={formData.synopsis}
                       onChange={handleInputChange}
                       placeholder={isGame ? "Brief overview of the gameplay/story..." : "Brief overview of the plot..."}
-                      className={`w-full bg-slate-950/60 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all`}
+                      className={`w-full bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all`}
                     />
                   </div>
 
@@ -3896,13 +4095,13 @@ export default function PopcornDashboard() {
                       value={formData.reasons_for_liking}
                       onChange={handleInputChange}
                       placeholder={isGame ? "My notes about levels, mechanics, bosses, graphics..." : "My notes about characters, music, visuals..."}
-                      className={`w-full bg-slate-950/60 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all`}
+                      className={`w-full bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all`}
                     />
                   </div>
                 </div>
 
                 {/* Footer Save Button */}
-                <div className="md:col-span-2 pt-4 border-t border-white/5 flex gap-3 justify-end bg-slate-950/10">
+                <div className="md:col-span-2 pt-4 border-t border-white/5 flex gap-3 justify-end bg-midnight/10">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
@@ -3913,7 +4112,7 @@ export default function PopcornDashboard() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`flex items-center justify-center gap-1.5 px-6 py-2.5 disabled:bg-slate-800 text-white font-bold rounded-xl shadow-md text-xs transition-all ${isGame ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-orange-600 hover:bg-orange-500'}`}
+                    className={`flex items-center justify-center gap-1.5 px-6 py-2.5 disabled:bg-slate-800 text-white font-bold rounded-xl shadow-md text-xs transition-all ${isGame ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
                   >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     <span>{isGame ? 'Save Game' : 'Save Watchlist'}</span>
@@ -3957,11 +4156,11 @@ export default function PopcornDashboard() {
             {/* Bucket / Gamepad container */}
             <div className="absolute bottom-4 flex flex-col items-center animate-bounce duration-1000">
               {isGame ? (
-                <Gamepad className="w-20 h-20 text-emerald-450 fill-emerald-600/10 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
+                <Gamepad className="w-20 h-20 text-cyan-400 fill-cyan-600/10 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
               ) : (
-                <PopcornIcon className="w-20 h-20 text-orange-500 fill-orange-600/10 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]" />
+                <PopcornIcon className="w-20 h-20 text-indigo-500 fill-indigo-600/10 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]" />
               )}
-              <div className={`mt-4 px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest animate-pulse ${isGame ? 'bg-emerald-600/10 border-emerald-500/25 text-emerald-400' : 'bg-orange-600/10 border-orange-500/25 text-orange-500'}`}>
+              <div className={`mt-4 px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest animate-pulse ${isGame ? 'bg-cyan-600/10 border-cyan-500/25 text-cyan-300' : 'bg-indigo-600/10 border-indigo-500/25 text-indigo-500'}`}>
                 {isGame ? 'Finding next quest...' : 'Popping Surprise...'}
               </div>
             </div>
@@ -3998,11 +4197,11 @@ export default function PopcornDashboard() {
 
             {/* Glowing success circle */}
             {isGame ? (
-              <div className="w-24 h-24 rounded-full bg-amber-500 text-yellow-300 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.7)] animate-in zoom-in duration-300">
+              <div className="w-24 h-24 rounded-full bg-amber-500 text-amber-200 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.7)] animate-in zoom-in duration-300">
                 <Trophy className="w-12 h-12 stroke-[2.5]" />
               </div>
             ) : (
-              <div className="w-24 h-24 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.6)] animate-in zoom-in duration-300">
+              <div className="w-24 h-24 rounded-full bg-cyan-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.6)] animate-in zoom-in duration-300">
                 <Check className="w-12 h-12 stroke-[3]" />
               </div>
             )}
@@ -4047,8 +4246,8 @@ export default function PopcornDashboard() {
                 })}
 
                 <div className="transition-bucket flex flex-col items-center z-20">
-                  <div className="w-28 h-28 bg-gradient-to-b from-red-600 to-red-800 rounded-2xl flex items-center justify-center border-4 border-yellow-400 shadow-[0_0_30px_rgba(239,68,68,0.6)]">
-                    <PopcornIcon className="w-16 h-16 text-yellow-300 fill-yellow-200 animate-pulse" />
+                  <div className="w-28 h-28 bg-gradient-to-b from-red-600 to-red-800 rounded-2xl flex items-center justify-center border-4 border-amber-300 shadow-[0_0_30px_rgba(239,68,68,0.6)]">
+                    <PopcornIcon className="w-16 h-16 text-amber-200 fill-yellow-200 animate-pulse" />
                   </div>
 
                   <div className="mt-8 flex flex-col items-center gap-1.5 text-center">
@@ -4066,11 +4265,11 @@ export default function PopcornDashboard() {
             {/* GameCorn transition: Boot screen & Retro Gamepad */}
             {transitionTarget === 'gamecorn' && (
               <div className="flex flex-col items-center z-20">
-                <div className="transition-gamepad w-28 h-28 rounded-full border-4 border-emerald-500/80 bg-slate-950/90 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]">
-                  <Gamepad className="w-16 h-16 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                <div className="transition-gamepad w-28 h-28 rounded-full border-4 border-cyan-500/80 bg-midnight/90 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]">
+                  <Gamepad className="w-16 h-16 text-cyan-300 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
                 </div>
 
-                <div className="mt-8 flex flex-col items-start font-mono gap-1 text-emerald-450 bg-black/60 p-4 border border-emerald-500/20 rounded-xl min-w-[240px] text-xs">
+                <div className="mt-8 flex flex-col items-start font-mono gap-1 text-cyan-400 bg-black/60 p-4 border border-cyan-500/20 rounded-xl min-w-[240px] text-xs">
                   <div className="terminal-line terminal-line-1 flex items-center gap-1.5">
                     <span className="text-cyan-400">&gt;</span> SYSTEM BOOT...
                   </div>
@@ -4080,7 +4279,7 @@ export default function PopcornDashboard() {
                   <div className="terminal-line terminal-line-3 flex items-center gap-1.5">
                     <span className="text-cyan-400">&gt;</span> API_GRID: CONNECTED
                   </div>
-                  <div className="terminal-line terminal-line-4 flex items-center gap-1.5 text-yellow-400 animate-pulse mt-1">
+                  <div className="terminal-line terminal-line-4 flex items-center gap-1.5 text-amber-300 animate-pulse mt-1">
                     <span className="text-cyan-400">&gt;</span> READY! INSERT COIN
                   </div>
                 </div>
@@ -4097,7 +4296,7 @@ export default function PopcornDashboard() {
             {/* Header */}
             <div className="chat-window-header">
               <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${isGame ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]'} animate-pulse`} />
+                <div className={`w-2.5 h-2.5 rounded-full ${isGame ? 'bg-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.8)]' : 'bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.8)]'} animate-pulse`} />
                 <span className="text-xs font-black uppercase text-white tracking-widest">
                   {isGame ? 'GameCorn AI' : 'Popcorn AI'}
                 </span>
@@ -4127,9 +4326,9 @@ export default function PopcornDashboard() {
                         return (
                           <div
                             key={recIdx}
-                            className="flex-shrink-0 w-[115px] bg-slate-950/80 border border-white/5 rounded-xl overflow-hidden flex flex-col justify-between"
+                            className="flex-shrink-0 w-[115px] bg-midnight/80 border border-white/5 rounded-xl overflow-hidden flex flex-col justify-between"
                           >
-                            <div className="aspect-[2/3] relative bg-slate-900 shrink-0">
+                            <div className="aspect-[2/3] relative bg-ink shrink-0">
                               {rec.poster_url ? (
                                 <img src={rec.poster_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={rec.title} />
                               ) : (
@@ -4138,8 +4337,8 @@ export default function PopcornDashboard() {
                                   <span className="truncate w-full font-bold">{rec.title}</span>
                                 </div>
                               )}
-                              <div className="absolute top-1 right-1 px-1 py-0.2 rounded bg-slate-950/80 text-[7px] text-yellow-400 font-black flex items-center gap-0.5">
-                                <Star className="w-2 h-2 fill-yellow-400 text-yellow-400" />
+                              <div className="absolute top-1 right-1 px-1 py-0.2 rounded bg-midnight/80 text-[7px] text-amber-300 font-black flex items-center gap-0.5">
+                                <Star className="w-2 h-2 fill-amber-300 text-amber-300" />
                                 <span>{Number(rec.rating || 0.0).toFixed(1)}</span>
                               </div>
                             </div>
@@ -4155,8 +4354,8 @@ export default function PopcornDashboard() {
                                 onClick={() => !inWatchlist && handleAddToWatchlist(rec)}
                                 disabled={inWatchlist}
                                 className={`w-full mt-1.5 py-1 rounded-lg text-[7px] font-black flex items-center justify-center gap-0.5 transition-all ${inWatchlist
-                                    ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                                    : (isGame ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white')
+                                  ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                                  : (isGame ? 'bg-cyan-600 hover:bg-cyan-500 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white')
                                   }`}
                               >
                                 {inWatchlist ? <Check className="w-2 h-2" /> : <Plus className="w-2 h-2" />}
@@ -4207,7 +4406,7 @@ export default function PopcornDashboard() {
         {/* Trigger Button */}
         <button
           onClick={() => setChatOpen(!chatOpen)}
-          className={`chat-trigger-btn ${isGame ? 'gamecorn bg-emerald-600 hover:bg-emerald-500' : 'bg-orange-600 hover:bg-orange-500'}`}
+          className={`chat-trigger-btn ${isGame ? 'gamecorn bg-cyan-600 hover:bg-cyan-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
           title="AI Assistant"
         >
           {chatOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
@@ -4217,10 +4416,10 @@ export default function PopcornDashboard() {
       {/* Custom Groups Management Modal */}
       {showGroupsModal && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowGroupsModal(false)} />
-          <div className="relative bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowGroupsModal(false)} />
+          <div className="relative glass-strong w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-slate-950/40">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-midnight/40">
               <div>
                 <h2 className="text-lg font-black text-white uppercase">
                   {isGame ? 'Manage Game Playlists' : 'Manage Movie Groups'}
@@ -4255,7 +4454,7 @@ export default function PopcornDashboard() {
                   placeholder="New group name..."
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
-                  className={`flex-1 bg-slate-950/60 border border-slate-800 ${isGame ? 'focus:border-emerald-500' : 'focus:border-orange-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
+                  className={`flex-1 bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
                 />
                 <button
                   type="submit"
@@ -4274,11 +4473,12 @@ export default function PopcornDashboard() {
                 ) : (
                   <div className="space-y-1.5">
                     {groups.map(g => (
-                      <div key={g.id} className="flex justify-between items-center p-3 bg-slate-950/40 border border-white/5 rounded-xl hover:border-slate-800 transition-colors">
+                      <div key={g.id} className="flex justify-between items-center p-3 bg-midnight/40 border border-white/5 rounded-xl hover:border-white/10 transition-colors">
                         <span className="text-xs font-bold text-slate-200">{g.name}</span>
                         <button
                           onClick={async () => {
                             if (!confirm(`Are you sure you want to delete group "${g.name}"? Items inside it won't be deleted.`)) return;
+                            setDeletingGroupId(g.id);
                             try {
                               await groupsApi.delete(g.id);
                               setGroups(prev => prev.filter(x => x.id !== g.id));
@@ -4288,17 +4488,175 @@ export default function PopcornDashboard() {
                               toast.success('Group deleted');
                             } catch (err) {
                               toast.error('Failed to delete group');
+                            } finally {
+                              setDeletingGroupId(null);
                             }
                           }}
-                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/15 transition-all"
+                          disabled={deletingGroupId !== null}
+                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/15 transition-all disabled:opacity-40"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          {deletingGroupId === g.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Group Selection Modal for Adding to Watchlist */}
+      {showAddToGroupModal && addToGroupTarget && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => { setShowAddToGroupModal(false); setAddToGroupTarget(null); }} />
+          <div className="relative glass-strong w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-midnight/40">
+              <div>
+                <h2 className="text-lg font-black text-white uppercase">
+                  {isGame ? 'Add Game to Playlist' : 'Add Movie to Watchlist'}
+                </h2>
+                <p className="text-slate-400 text-xs mt-1">
+                  Select which groups to add <span className={`font-semibold ${textPrimaryColor}`}>"{addToGroupTarget.title}"</span> to.
+                </p>
+              </div>
+              <button
+                onClick={() => { setShowAddToGroupModal(false); setAddToGroupTarget(null); }}
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[50vh]">
+              {/* Existing Groups Checklist */}
+              <div className="space-y-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Available Groups</p>
+                {groups.length === 0 ? (
+                  <p className="text-slate-400 text-xs italic py-2 text-center bg-midnight/20 rounded-xl border border-white/5">
+                    No custom groups created yet.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                    {groups.map(group => {
+                      const isChecked = selectedGroupIds.includes(group.id)
+                      return (
+                        <label
+                          key={group.id}
+                          className={`flex items-center gap-3 p-3 bg-midnight/40 border rounded-xl cursor-pointer select-none transition-all ${isChecked
+                              ? (isGame ? 'border-cyan-500/50 bg-cyan-600/10' : 'border-indigo-500/50 bg-indigo-600/10')
+                              : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
+                            }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={isChecked}
+                            onChange={() => {
+                              setSelectedGroupIds(prev =>
+                                isChecked ? prev.filter(id => id !== group.id) : [...prev, group.id]
+                              )
+                            }}
+                          />
+                          <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${isChecked
+                              ? (isGame ? 'bg-cyan-500 border-cyan-500' : 'bg-indigo-500 border-indigo-500')
+                              : 'border-white/20'
+                            }`}>
+                            {isChecked && <Check className="w-3 h-3 text-white stroke-[3px]" />}
+                          </div>
+                          <span className={`text-xs font-bold ${isChecked ? 'text-white' : 'text-slate-300'}`}>
+                            {group.name}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Inline Create Group */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Create New Group</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="New group name..."
+                    value={newGroupModalInput}
+                    onChange={(e) => setNewGroupModalInput(e.target.value)}
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        if (!newGroupModalInput.trim() || isCreatingGroupInModal) return
+                        setIsCreatingGroupInModal(true)
+                        try {
+                          const res = await groupsApi.create({ name: newGroupModalInput.trim(), type: appMode })
+                          setGroups(prev => [res, ...prev])
+                          setSelectedGroupIds(prev => [...prev, res.id])
+                          setNewGroupModalInput('')
+                          toast.success(`Group "${res.name}" created and selected!`)
+                        } catch (err) {
+                          toast.error('Failed to create group')
+                        } finally {
+                          setIsCreatingGroupInModal(false)
+                        }
+                      }
+                    }}
+                    className={`flex-1 bg-midnight/60 border border-white/10 ${isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'} rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500`}
+                  />
+                  <button
+                    type="button"
+                    disabled={!newGroupModalInput.trim() || isCreatingGroupInModal}
+                    onClick={async () => {
+                      if (!newGroupModalInput.trim() || isCreatingGroupInModal) return
+                      setIsCreatingGroupInModal(true)
+                      try {
+                        const res = await groupsApi.create({ name: newGroupModalInput.trim(), type: appMode })
+                        setGroups(prev => [res, ...prev])
+                        setSelectedGroupIds(prev => [...prev, res.id])
+                        setNewGroupModalInput('')
+                        toast.success(`Group "${res.name}" created and selected!`)
+                      } catch (err) {
+                        toast.error('Failed to create group')
+                      } finally {
+                        setIsCreatingGroupInModal(false)
+                      }
+                    }}
+                    className={`px-3 py-2 text-white font-bold rounded-xl text-xs transition-colors shrink-0 ${bgPrimaryColor}`}
+                  >
+                    {isCreatingGroupInModal ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-white/5 bg-midnight/40 flex justify-between items-center gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowAddToGroupModal(false); setAddToGroupTarget(null); }}
+                className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold transition-all text-slate-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmAddToWatchlist}
+                disabled={isSavingWatchlist}
+                className={`flex-1 py-2.5 rounded-xl text-white font-bold text-xs transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-1.5 ${isGame ? 'bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/15' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15'
+                  } disabled:opacity-50`}
+              >
+                {isSavingWatchlist ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  selectedGroupIds.length === 0 ? (isGame ? 'Add to Playlist' : 'Add to Watchlist') : `Add to ${selectedGroupIds.length} ${selectedGroupIds.length === 1 ? 'Group' : 'Groups'}`
+                )}
+              </button>
             </div>
           </div>
         </div>

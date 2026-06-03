@@ -37,13 +37,13 @@ export default function LazyRow({ children, height = '345px', className = '' }) 
       {isVisible ? children : (
         <div className="w-full h-full flex flex-col gap-4 animate-pulse py-4">
           {/* Skeleton row title */}
-          <div className="h-5 w-48 bg-slate-800/60 rounded-lg"></div>
+          <div className="h-5 w-48 bg-white/[0.04] rounded-lg"></div>
           {/* Skeleton carousel row cards */}
           <div className="flex gap-6 overflow-hidden">
             {[...Array(6)].map((_, i) => (
-              <div 
-                key={i} 
-                className="min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] aspect-[2/3] bg-slate-900/40 border border-slate-800/50 rounded-2xl shrink-0"
+              <div
+                key={i}
+                className="min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] aspect-[2/3] bg-white/[0.02] border border-white/[0.06] rounded-2xl shrink-0"
               />
             ))}
           </div>

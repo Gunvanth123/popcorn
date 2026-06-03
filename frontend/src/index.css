@@ -4,17 +4,31 @@
 
 @layer base {
   :root {
-    --bg: #0b0f19;
-    --card: rgba(17, 24, 39, 0.7);
-    --border: rgba(255, 255, 255, 0.08);
-    --text: #f3f4f6;
+    --bg: #0a0a1a;
+    --surface: #141432;
+    --surface-2: #1e1e5a;
+    --border: rgba(165, 180, 252, 0.10);
+    --text: #e6e8ff;
+    --muted: #8b8db5;
+    --accent: #4f46e5;
+    --accent-glow: #6366f1;
+    --accent-game: #06b6d4;
+    --accent-game-glow: #22d3ee;
   }
-  
+
   html:not(.dark) {
-    --bg: #f8fafc;
-    --card: rgba(255, 255, 255, 0.8);
-    --border: rgba(0, 0, 0, 0.08);
-    --text: #0f172a;
+    --bg: #f5f5fb;
+    --surface: #ffffff;
+    --surface-2: #eef0fa;
+    --border: rgba(30, 30, 90, 0.10);
+    --text: #0a0a1a;
+    --muted: #5a5d7a;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 }
 
@@ -22,13 +36,9 @@
    ROOT — smooth, GPU-composited scrolling foundation
    ============================================================ */
 html {
-  /* Enable momentum (inertia) scrolling on iOS */
   -webkit-overflow-scrolling: touch;
-  /* Prevent pull-to-refresh rubbering the whole page */
   overscroll-behavior-y: none;
-  /* Native smooth scroll for anchor links */
   scroll-behavior: smooth;
-  /* Move the entire page to its own compositor layer once */
   will-change: scroll-position;
 }
 
@@ -36,16 +46,19 @@ body {
   background-color: var(--bg);
   color: var(--text);
   margin: 0;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
   overflow-x: hidden;
-  /* Prevent horizontal overscroll rubber-banding */
   overscroll-behavior-x: none;
-  /* Tell the browser we will only scroll, not transform the body */
   will-change: auto;
-  /* Ensure text is rendered with GPU sub-pixel antialiasing */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeSpeed;
+  text-rendering: optimizeLegibility;
+  background-image:
+    radial-gradient(ellipse at 12% -5%, rgba(99, 102, 241, 0.22), transparent 55%),
+    radial-gradient(ellipse at 88% 8%, rgba(6, 182, 212, 0.10), transparent 50%),
+    radial-gradient(ellipse at 50% 110%, rgba(79, 70, 229, 0.18), transparent 55%);
+  background-attachment: fixed;
 }
 
 /* ============================================================
@@ -78,24 +91,45 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(165, 180, 252, 0.18);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.6);
+  background: rgba(99, 102, 241, 0.7);
 }
 
 /* ============================================================
-   GLASSMORPHISM — contain paint to avoid repaint storms
+   GLASSMORPHISM — Midnight Indigo
    ============================================================ */
 .glass {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  /* Contain repaints within this element */
+  background: rgba(20, 20, 50, 0.55);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(165, 180, 252, 0.10);
   contain: paint;
+}
+
+.glass-strong {
+  background: rgba(10, 10, 26, 0.78);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(165, 180, 252, 0.12);
+  contain: paint;
+}
+
+/* Subtle starfield grain for the cinematic mood */
+.starfield::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 23% 17%, rgba(165,180,252,0.6), transparent 50%),
+    radial-gradient(1px 1px at 71% 42%, rgba(199,210,254,0.45), transparent 50%),
+    radial-gradient(1px 1px at 12% 81%, rgba(165,180,252,0.4), transparent 50%),
+    radial-gradient(1px 1px at 88% 73%, rgba(199,210,254,0.55), transparent 50%),
+    radial-gradient(1px 1px at 47% 32%, rgba(165,180,252,0.35), transparent 50%);
+  opacity: 0.6;
+  z-index: 0;
 }
 
 /* ============================================================
@@ -631,14 +665,14 @@ img {
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(249, 115, 22, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(99, 102, 241, 0.35);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .chat-trigger-btn.gamecorn {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(6, 182, 212, 0.35);
 }
 
 .chat-trigger-btn:hover {
@@ -727,15 +761,15 @@ img {
 
 .chat-message-bubble.user {
   align-self: flex-end;
-  background: rgba(249, 115, 22, 0.15);
+  background: rgba(99, 102, 241, 0.18);
   color: #fff;
-  border: 1px solid rgba(249, 115, 22, 0.25);
+  border: 1px solid rgba(99, 102, 241, 0.3);
   border-bottom-right-radius: 4px;
 }
 
 .chat-message-bubble.user.gamecorn {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(6, 182, 212, 0.18);
+  border: 1px solid rgba(6, 182, 212, 0.3);
 }
 
 .chat-message-bubble.assistant {
@@ -852,3 +886,116 @@ img {
     transform: scale(1);
   }
 }
+
+/* ============================================================
+   REDESIGNED DASHBOARD STYLES
+   ============================================================ */
+
+/* Glass card styling */
+.glass-card {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.45);
+}
+
+/* Custom indicator styles for Popcorn & GameCorn modes */
+.popcorn-card-glow:hover {
+  box-shadow: 0 20px 40px -15px rgba(239, 68, 68, 0.35), 0 0 20px -8px rgba(249, 115, 22, 0.25);
+  border-color: rgba(249, 115, 22, 0.35) !important;
+}
+
+.gamecorn-card-glow:hover {
+  box-shadow: 0 20px 40px -15px rgba(6, 182, 212, 0.35), 0 0 20px -8px rgba(139, 92, 246, 0.25);
+  border-color: rgba(6, 182, 212, 0.35) !important;
+}
+
+/* Dashboard sliding active tab switcher */
+.tab-switcher-container {
+  position: relative;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 4px;
+}
+
+.tab-switcher-btn {
+  position: relative;
+  z-index: 2;
+  transition: color 0.3s ease;
+}
+
+/* Premium ambient color animation */
+@keyframes slow-bg-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.premium-gradient-bg {
+  background-size: 200% 200%;
+  animation: slow-bg-shift 8s ease infinite;
+}
+
+/* Floating element hover animation */
+@keyframes float-micro {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.hover-float:hover {
+  animation: float-micro 2s ease-in-out infinite;
+}
+
+/* Modern shiny custom scrollbar */
+.modern-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.modern-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.modern-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.modern-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Leaderboard luxury cards decoration */
+.luxury-gold-glow {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(15, 23, 42, 0.65) 100%) !important;
+  border: 1px solid rgba(234, 179, 8, 0.35) !important;
+  box-shadow: 0 12px 35px -8px rgba(234, 179, 8, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.luxury-silver-glow {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.08) 0%, rgba(15, 23, 42, 0.65) 100%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  box-shadow: 0 12px 35px -8px rgba(148, 163, 184, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.luxury-bronze-glow {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.08) 0%, rgba(15, 23, 42, 0.65) 100%) !important;
+  border: 1px solid rgba(180, 83, 9, 0.25) !important;
+  box-shadow: 0 12px 35px -8px rgba(180, 83, 9, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
