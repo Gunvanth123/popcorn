@@ -466,10 +466,89 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
   const brandBg = isGame ? 'bg-cyan-500/10 border-cyan-500/20' : 'bg-indigo-500/10 border-indigo-500/20'
   const selectFocus = isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'
 
+  const [isEditingRanks, setIsEditingRanks] = useState(false)
+  const [tempRanks, setTempRanks] = useState({})
+
+  const handleSaveRanks = async () => {
+    setIsUpdating(true)
+    try {
+      const newRankList = rankedItems.map(item => {
+        const nr = tempRanks[item.id]
+        return {
+          id: item.id,
+          newRank: (nr === '' || nr === undefined || nr === null) ? 9999 : Number(nr)
+        }
+      })
+
+      newRankList.sort((a, b) => {
+        if (a.newRank !== b.newRank) {
+          return a.newRank - b.newRank
+        }
+        const itemA = entries.find(x => x.id === a.id)
+        const itemB = entries.find(x => x.id === b.id)
+        return (itemA?.rank || 0) - (itemB?.rank || 0)
+      })
+
+      for (let i = 0; i < newRankList.length; i++) {
+        const targetId = newRankList[i].id
+        const finalRank = i + 1
+        const currentItem = entries.find(x => x.id === targetId)
+        if (currentItem && currentItem.rank !== finalRank) {
+          if (isGame) {
+            await gamesApi.update(targetId, { rank: finalRank })
+          } else {
+            await popcornApi.update(targetId, { rank: finalRank })
+          }
+        }
+      }
+
+      toast.success('Ranks updated successfully!')
+      setIsEditingRanks(false)
+      await fetchEntries()
+    } catch (err) {
+      toast.error('Failed to save ranks')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   // Get ranked entries, sorted by rank ascending
   const rankedItems = entries
     .filter(e => e.rank !== null && e.rank !== undefined)
     .sort((a, b) => a.rank - b.rank)
+
+  // Auto-compact/repair gaps in ranks
+  useEffect(() => {
+    const compactRanks = async () => {
+      let needsCompacting = false
+      for (let i = 0; i < rankedItems.length; i++) {
+        if (rankedItems[i].rank !== i + 1) {
+          needsCompacting = true
+          break
+        }
+      }
+      if (needsCompacting && !isUpdating) {
+        setIsUpdating(true)
+        try {
+          for (let i = 0; i < rankedItems.length; i++) {
+            if (rankedItems[i].rank !== i + 1) {
+              if (isGame) {
+                await gamesApi.update(rankedItems[i].id, { rank: i + 1 })
+              } else {
+                await popcornApi.update(rankedItems[i].id, { rank: i + 1 })
+              }
+            }
+          }
+          await fetchEntries()
+        } catch (err) {
+          console.error("Failed to compact ranks:", err)
+        } finally {
+          setIsUpdating(false)
+        }
+      }
+    }
+    compactRanks()
+  }, [entries])
 
   // Get unranked entries for dropdown selection
   const unrankedItems = entries.filter(e => e.rank === null || e.rank === undefined)
@@ -563,17 +642,58 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
-            <Crown className="w-6 h-6 text-yellow-500 animate-pulse" />
-            <span>Personal Leaderboard</span>
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <Crown className="w-6 h-6 text-yellow-500 animate-pulse" />
+              <span>Personal Leaderboard</span>
+            </h2>
+            
+            {rankedItems.length > 0 && (
+              <div className="ml-2">
+                {isEditingRanks ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSaveRanks}
+                      disabled={isUpdating}
+                      className={`px-3 py-1.5 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1 shrink-0 ${isGame ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                    >
+                      {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                      <span>Save Ranks</span>
+                    </button>
+                    <button
+                      onClick={() => setIsEditingRanks(false)}
+                      disabled={isUpdating}
+                      className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const initialRanks = {}
+                      rankedItems.forEach(item => {
+                        initialRanks[item.id] = item.rank
+                      })
+                      setTempRanks(initialRanks)
+                      setIsEditingRanks(true)
+                    }}
+                    className="px-3 py-1.5 bg-midnight/80 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-white/10 text-xs font-bold transition-all flex items-center gap-1.5"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edit Ranks</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
           <p className="text-xs text-slate-400 mt-1">
-            Rank your absolute favorite {isGame ? 'games' : 'movies & shows'}. Reorder them using the controls to curate your ultimate standouts.
+            Rank your absolute favorite {isGame ? 'games' : 'movies & shows'}. Click 'Edit Ranks' to directly reorder them.
           </p>
         </div>
 
         {/* Add Item to Leaderboard Form */}
-        {unrankedItems.length > 0 && (
+        {!isEditingRanks && unrankedItems.length > 0 && (
           <form onSubmit={handleAdd} className="flex items-center gap-2 bg-ink/40 border border-white/10 p-1.5 rounded-2xl animate-in fade-in duration-300">
             <select
               value={selectedAddId}
@@ -634,10 +754,28 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
               >
                 {/* Left side: Rank, Image and metadata */}
                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                  {/* Rank Badge */}
-                  <div className={`w-16 h-8 flex items-center justify-center rounded-xl border shrink-0 uppercase tracking-wider transition-transform duration-300 ${rankBadgeColor}`}>
-                    {rankLabel}
-                  </div>
+                  {/* Rank Badge or Input */}
+                  {isEditingRanks ? (
+                    <input
+                      type="number"
+                      min="1"
+                      value={tempRanks[item.id] !== undefined ? tempRanks[item.id] : ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseInt(e.target.value)
+                        setTempRanks(prev => ({
+                          ...prev,
+                          [item.id]: val
+                        }))
+                      }}
+                      className={`w-16 h-8 text-center bg-midnight border ${
+                        isGame ? 'border-cyan-500/50 focus:border-cyan-500' : 'border-indigo-500/50 focus:border-indigo-500'
+                      } rounded-xl text-xs font-black text-white outline-none transition-all`}
+                    />
+                  ) : (
+                    <div className={`w-16 h-8 flex items-center justify-center rounded-xl border shrink-0 uppercase tracking-wider transition-transform duration-300 ${rankBadgeColor}`}>
+                      {rankLabel}
+                    </div>
+                  )}
 
                   {/* Thumbnail */}
                   {item.poster_url ? (
@@ -654,17 +792,26 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
 
                   {/* Text details */}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-white truncate">{item.title}</span>
-                      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold px-1.5 py-0.5 rounded-md bg-midnight/80 border border-white/5">
-                        {isGame ? item.platform : item.category}
-                      </span>
-                    </div>
+                    <h4 className="text-xs sm:text-sm font-black text-white truncate" title={item.title}>
+                      {item.title}
+                    </h4>
+                    <p className="text-[9px] font-bold text-slate-500 mt-0.5 uppercase tracking-wider">
+                      {isGame ? item.platform : item.category}
+                    </p>
                     <div className="flex items-center gap-3 mt-1.5">
                       {item.my_rating && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-slate-400">My Rating:</span>
-                          <PopcornRating rating={item.my_rating} isGame={isGame} />
+                        <div className="flex items-center gap-2">
+                          {/* Mobile compact rating */}
+                          <div className="flex sm:hidden items-center gap-1 text-[10px] font-black text-amber-300">
+                            <span>My Rating:</span>
+                            <span>{Number(item.my_rating).toFixed(1)}</span>
+                            {isGame ? <Gamepad className="w-3.5 h-3.5 text-cyan-400" /> : <PopcornIcon className="w-3.5 h-3.5 text-indigo-500" />}
+                          </div>
+                          {/* Desktop full rating */}
+                          <div className="hidden sm:flex items-center gap-1.5">
+                            <span className="text-[10px] text-slate-400">My Rating:</span>
+                            <PopcornRating rating={item.my_rating} isGame={isGame} />
+                          </div>
                         </div>
                       )}
                       {item.genres && (
@@ -676,24 +823,8 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                   </div>
                 </div>
 
-                {/* Right side: Reorder / Delete Controls */}
+                {/* Right side: Delete Controls */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => handleMove(index, 'up')}
-                    disabled={index === 0 || isUpdating}
-                    className="p-2 bg-midnight/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
-                    title="Move Up"
-                  >
-                    <ChevronLeft className="w-4 h-4 rotate-90" />
-                  </button>
-                  <button
-                    onClick={() => handleMove(index, 'down')}
-                    disabled={index === rankedItems.length - 1 || isUpdating}
-                    className="p-2 bg-midnight/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all disabled:opacity-30 disabled:pointer-events-none"
-                    title="Move Down"
-                  >
-                    <ChevronLeft className="w-4 h-4 -rotate-90" />
-                  </button>
                   <button
                     onClick={() => handleRemove(item)}
                     disabled={isUpdating}
@@ -1577,34 +1708,65 @@ export default function PopcornDashboard() {
     if (!addToGroupTarget) return
     setIsSavingWatchlist(true)
     try {
+      let res
       if (appMode === 'gamecorn') {
-        const res = await gamesApi.create({
+        const payload = {
           title: addToGroupTarget.title,
           platform: addToGroupTarget.platform || 'PC',
           rating: addToGroupTarget.rating,
           synopsis: addToGroupTarget.synopsis,
-          reasons_for_liking: 'Saved from recommendations',
+          reasons_for_liking: addToGroupTarget.reasons_for_liking || 'Saved from recommendations',
           genres: addToGroupTarget.genres,
           poster_url: addToGroupTarget.poster_url,
-          poster_data: null,
-          group_ids: selectedGroupIds
+          poster_data: addToGroupTarget.poster_data || null,
+          group_ids: selectedGroupIds,
+          is_played: false,
+          is_playing: false
+        }
+        if (addToGroupTarget.id) {
+          res = await gamesApi.update(addToGroupTarget.id, payload)
+        } else {
+          res = await gamesApi.create(payload)
+        }
+        setEntries(prev => {
+          const exists = prev.some(e => e.id === res.id)
+          if (exists) {
+            return prev.map(e => e.id === res.id ? res : e)
+          } else {
+            return [res, ...prev]
+          }
         })
-        setEntries(prev => [res, ...prev])
+        setSelectedEntry(res)
         toast.success(`"${addToGroupTarget.title}" added to your Playlist!`)
       } else {
-        const res = await popcornApi.create({
+        const payload = {
           title: addToGroupTarget.title,
           category: addToGroupTarget.category,
           language: addToGroupTarget.language,
           rating: addToGroupTarget.rating,
           synopsis: addToGroupTarget.synopsis,
-          reasons_for_liking: 'Saved from recommendations',
+          reasons_for_liking: addToGroupTarget.reasons_for_liking || 'Saved from recommendations',
           genres: addToGroupTarget.genres,
           poster_url: addToGroupTarget.poster_url,
-          poster_data: null,
-          group_ids: selectedGroupIds
+          poster_data: addToGroupTarget.poster_data || null,
+          group_ids: selectedGroupIds,
+          is_seen: false,
+          is_watching: false
+        }
+        if (addToGroupTarget.id) {
+          res = await popcornApi.update(addToGroupTarget.id, payload)
+        } else {
+          res = await popcornApi.create(payload)
+        }
+        setEntries(prev => {
+          const exists = prev.some(e => e.id === res.id)
+          if (exists) {
+            return prev.map(e => e.id === res.id ? res : e)
+          } else {
+            return [res, ...prev]
+          }
         })
-        setEntries(prev => [res, ...prev])
+        setSelectedEntry(res)
         toast.success(`"${addToGroupTarget.title}" added to your watchlist!`)
       }
       setShowAddToGroupModal(false)
@@ -1702,6 +1864,10 @@ export default function PopcornDashboard() {
   }, [selectedEntry])
 
   const handleUpdateStatus = async (statusType) => {
+    if (statusType === 'watchlist') {
+      handleAddToWatchlist(selectedEntry)
+      return
+    }
     setUpdatingStatusType(statusType)
     try {
       let payload = {
@@ -1880,6 +2046,7 @@ export default function PopcornDashboard() {
           poster_data: selectedEntry.poster_data,
           my_rating: seenRating,
           is_played: true,
+          is_playing: false,
           rank: nextRank,
           tags: selectedTags.join(', ')
         } : {
@@ -1894,6 +2061,7 @@ export default function PopcornDashboard() {
           poster_data: selectedEntry.poster_data,
           my_rating: seenRating,
           is_seen: true,
+          is_watching: false,
           rank: nextRank,
           tags: selectedTags.join(', ')
         }
@@ -1929,6 +2097,7 @@ export default function PopcornDashboard() {
           poster_data: null,
           my_rating: seenRating,
           is_played: true,
+          is_playing: false,
           rank: nextRank,
           tags: selectedTags.join(', ')
         } : {
@@ -1943,6 +2112,7 @@ export default function PopcornDashboard() {
           poster_data: null,
           my_rating: seenRating,
           is_seen: true,
+          is_watching: false,
           rank: nextRank,
           tags: selectedTags.join(', ')
         }
@@ -1984,6 +2154,7 @@ export default function PopcornDashboard() {
         poster_data: selectedEntry.poster_data,
         my_rating: null,
         is_played: false,
+        is_playing: false,
         rank: null,
         tags: null
       } : {
@@ -1998,6 +2169,7 @@ export default function PopcornDashboard() {
         poster_data: selectedEntry.poster_data,
         my_rating: null,
         is_seen: false,
+        is_watching: false,
         rank: null,
         tags: null
       }
@@ -2376,6 +2548,9 @@ export default function PopcornDashboard() {
     if (!confirm('Are you sure you want to remove this?')) return
     setIsDeleting(true)
     try {
+      const deletedItem = entries.find(e => e.id === id)
+      const deletedRank = deletedItem ? deletedItem.rank : null
+
       if (appMode === 'gamecorn') {
         await gamesApi.delete(id)
       } else {
@@ -2384,6 +2559,19 @@ export default function PopcornDashboard() {
       setEntries(prev => prev.filter(e => e.id !== id))
       toast.success('Entry removed')
       if (showViewModal) setShowViewModal(false)
+
+      // Shift ranks of remaining items to close the gap
+      if (deletedRank !== null && deletedRank !== undefined) {
+        const itemsToShift = entries.filter(e => e.rank !== null && e.rank !== undefined && e.rank > deletedRank && e.id !== id)
+        for (const otherItem of itemsToShift) {
+          if (isGame) {
+            await gamesApi.update(otherItem.id, { rank: otherItem.rank - 1 })
+          } else {
+            await popcornApi.update(otherItem.id, { rank: otherItem.rank - 1 })
+          }
+        }
+        await fetchEntries()
+      }
     } catch (err) {
       toast.error('Failed to remove entry')
     } finally {
@@ -2460,6 +2648,123 @@ export default function PopcornDashboard() {
   const borderPrimaryFocus = isGame ? 'focus:border-cyan-500' : 'focus:border-indigo-500'
   const activeBorderClass = isGame ? 'border-cyan-500 text-cyan-500' : 'border-indigo-500 text-indigo-500'
   const surpriseBtnClass = isGame ? 'from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 shadow-cyan-600/20' : 'from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-600/20'
+
+  const renderContinueWatchingRow = () => {
+    const watchingEntries = entries.filter(e => isGame ? e.is_playing : e.is_watching)
+    if (watchingEntries.length === 0) return null
+
+    const rowId = 'continue-watching-row'
+    return (
+      <LazyRow height="345px">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {isGame ? <Gamepad className="w-5 h-5 text-cyan-400 animate-pulse" /> : <Tv className="w-5 h-5 text-indigo-400 animate-pulse" />}
+              <h3 className="text-base font-black text-white uppercase tracking-wider">
+                {isGame ? "Continue Playing 🎮" : "Continue Watching 📺"}
+              </h3>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              {watchingEntries.length} Active
+            </span>
+          </div>
+
+          <div className="relative group/row">
+            {/* Left Scroll Button */}
+            <button
+              onClick={() => scrollRow(rowId, 'left')}
+              className="absolute left-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 hover:scale-105 active:scale-95"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Carousel */}
+            <div
+              id={rowId}
+              className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-row"
+              style={{ touchAction: 'pan-x', WebkitOverflowScrolling: 'touch' }}
+            >
+              {watchingEntries.map((item, idx) => {
+                return (
+                  <div
+                    key={item.id || idx}
+                    onClick={() => handleCardClick(item)}
+                    className="movie-3d-card-container min-w-[165px] w-[165px] sm:min-w-[190px] sm:w-[190px] flex-shrink-0"
+                  >
+                    <div
+                      className="movie-3d-card bg-ink/60 border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between h-full transition-all duration-300 relative cursor-pointer"
+                    >
+                      <div className="movie-card-shine absolute inset-0 pointer-events-none z-10 opacity-0 transition-opacity duration-300" />
+                      
+                      <div className="aspect-[2/3] bg-midnight relative overflow-hidden shrink-0 rounded-t-2xl">
+                        {item.poster_data ? (
+                          <img src={item.poster_data} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
+                        ) : item.poster_url ? (
+                          <img src={item.poster_url} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-t-2xl" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">
+                            {isGame ? <Gamepad className="w-8 h-8 text-slate-800 mb-1" /> : <Film className="w-8 h-8 text-slate-800 mb-1" />}
+                            <span className="text-[10px] text-slate-600 font-bold uppercase truncate w-full">{item.title}</span>
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-midnight/80 border border-white/10 text-[9px] font-black text-amber-300 flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" />
+                          <span>{Number(item.rating || 0).toFixed(1)}</span>
+                        </div>
+                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-midnight/80 border border-white/5 text-[8px] font-black uppercase tracking-wider text-slate-200">
+                          {isGame ? item.platform : item.category}
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 flex-1 flex flex-col justify-between min-h-0">
+                        <div>
+                          <h4 className="font-bold text-xs text-white line-clamp-1 leading-snug hover:text-indigo-500 transition-colors" title={item.title}>
+                            {item.title}
+                          </h4>
+                          <p className="text-[9px] text-slate-500 mt-0.5">
+                            {isGame ? 'Playing' : 'Watching'}
+                          </p>
+                        </div>
+                        
+                        <div className="flex gap-1.5 mt-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedEntry(item)
+                              setShowSeenForm(true)
+                              setShowViewModal(true)
+                            }}
+                            className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all border border-white/5 text-white ${
+                              isGame 
+                                ? 'bg-cyan-600 hover:bg-cyan-500' 
+                                : 'bg-indigo-600 hover:bg-indigo-500'
+                            }`}
+                          >
+                            <Check className="w-3 h-3" />
+                            <span>{isGame ? 'Mark Played' : 'Mark Seen'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Right Scroll Button */}
+            <button
+              onClick={() => scrollRow(rowId, 'right')}
+              className="absolute right-0 top-[35%] -translate-y-1/2 w-10 h-10 rounded-full bg-midnight/85 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all duration-300 z-10 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 hover:scale-105 active:scale-95"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </LazyRow>
+    )
+  }
 
 
   return (
@@ -3320,6 +3625,8 @@ export default function PopcornDashboard() {
             )}
 
             {/* Curated Recommendations Lists */}
+            {renderContinueWatchingRow()}
+
             {recLoading ? (
               <div className="flex flex-col items-center justify-center py-24 gap-4">
                 <Loader2 className={`w-8 h-8 animate-spin ${textPrimaryColor}`} />
@@ -3704,7 +4011,7 @@ export default function PopcornDashboard() {
                           <button
                             onClick={() => handleUpdateStatus('watchlist')}
                             disabled={updatingStatusType !== null}
-                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${!selectedEntry.is_seen && !selectedEntry.is_played && !(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${selectedEntry.id !== undefined && !selectedEntry.is_seen && !selectedEntry.is_played && !(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
                               ? (isGame ? 'bg-cyan-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md')
                               : 'text-slate-400 hover:text-slate-200'
                               } disabled:opacity-50`}
@@ -3716,7 +4023,7 @@ export default function PopcornDashboard() {
                           <button
                             onClick={() => handleUpdateStatus('watching')}
                             disabled={updatingStatusType !== null}
-                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame ? selectedEntry.is_playing : selectedEntry.is_watching
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${(isGame ? selectedEntry.is_playing : selectedEntry.is_watching)
                               ? (isGame ? 'bg-cyan-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md')
                               : 'text-slate-400 hover:text-slate-200'
                               } disabled:opacity-50`}
@@ -3728,7 +4035,7 @@ export default function PopcornDashboard() {
                           <button
                             onClick={() => handleUpdateStatus('seen')}
                             disabled={updatingStatusType !== null}
-                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${isGame ? selectedEntry.is_played : selectedEntry.is_seen
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${(isGame ? selectedEntry.is_played : selectedEntry.is_seen)
                               ? (isGame ? 'bg-cyan-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md')
                               : 'text-slate-400 hover:text-slate-200'
                               } disabled:opacity-50`}
@@ -4535,46 +4842,67 @@ export default function PopcornDashboard() {
               {/* Existing Groups Checklist */}
               <div className="space-y-2.5">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Available Groups</p>
-                {groups.length === 0 ? (
-                  <p className="text-slate-400 text-xs italic py-2 text-center bg-midnight/20 rounded-xl border border-white/5">
-                    No custom groups created yet.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                    {groups.map(group => {
-                      const isChecked = selectedGroupIds.includes(group.id)
-                      return (
-                        <label
-                          key={group.id}
-                          className={`flex items-center gap-3 p-3 bg-midnight/40 border rounded-xl cursor-pointer select-none transition-all ${isChecked
-                              ? (isGame ? 'border-cyan-500/50 bg-cyan-600/10' : 'border-indigo-500/50 bg-indigo-600/10')
-                              : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
-                            }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="hidden"
-                            checked={isChecked}
-                            onChange={() => {
-                              setSelectedGroupIds(prev =>
-                                isChecked ? prev.filter(id => id !== group.id) : [...prev, group.id]
-                              )
-                            }}
-                          />
-                          <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${isChecked
-                              ? (isGame ? 'bg-cyan-500 border-cyan-500' : 'bg-indigo-500 border-indigo-500')
-                              : 'border-white/20'
-                            }`}>
-                            {isChecked && <Check className="w-3 h-3 text-white stroke-[3px]" />}
-                          </div>
-                          <span className={`text-xs font-bold ${isChecked ? 'text-white' : 'text-slate-300'}`}>
-                            {group.name}
-                          </span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                )}
+                <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-1">
+                  {/* Ungrouped / Watchlist only option */}
+                  <label
+                    className={`flex items-center gap-3 p-3 bg-midnight/40 border rounded-xl cursor-pointer select-none transition-all ${selectedGroupIds.length === 0
+                        ? (isGame ? 'border-cyan-500/50 bg-cyan-600/10' : 'border-indigo-500/50 bg-indigo-600/10')
+                        : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="hidden"
+                      checked={selectedGroupIds.length === 0}
+                      onChange={() => {
+                        setSelectedGroupIds([])
+                      }}
+                    />
+                    <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${selectedGroupIds.length === 0
+                        ? (isGame ? 'bg-cyan-500 border-cyan-500' : 'bg-indigo-500 border-indigo-500')
+                        : 'border-white/20'
+                      }`}>
+                      {selectedGroupIds.length === 0 && <Check className="w-3 h-3 text-white stroke-[3px]" />}
+                    </div>
+                    <span className={`text-xs font-bold ${selectedGroupIds.length === 0 ? 'text-white' : 'text-slate-300'}`}>
+                      {isGame ? 'Ungrouped (Playlist Only)' : 'Ungrouped (Watchlist Only)'}
+                    </span>
+                  </label>
+
+                  {/* Render custom groups list */}
+                  {groups.map(group => {
+                    const isChecked = selectedGroupIds.includes(group.id)
+                    return (
+                      <label
+                        key={group.id}
+                        className={`flex items-center gap-3 p-3 bg-midnight/40 border rounded-xl cursor-pointer select-none transition-all ${isChecked
+                            ? (isGame ? 'border-cyan-500/50 bg-cyan-600/10' : 'border-indigo-500/50 bg-indigo-600/10')
+                            : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
+                          }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="hidden"
+                          checked={isChecked}
+                          onChange={() => {
+                            setSelectedGroupIds(prev =>
+                              isChecked ? prev.filter(id => id !== group.id) : [...prev, group.id]
+                            )
+                          }}
+                        />
+                        <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${isChecked
+                            ? (isGame ? 'bg-cyan-500 border-cyan-500' : 'bg-indigo-500 border-indigo-500')
+                            : 'border-white/20'
+                          }`}>
+                          {isChecked && <Check className="w-3 h-3 text-white stroke-[3px]" />}
+                        </div>
+                        <span className={`text-xs font-bold ${isChecked ? 'text-white' : 'text-slate-300'}`}>
+                          {group.name}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
               </div>
 
               {/* Inline Create Group */}
