@@ -469,6 +469,55 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
   const [isEditingRanks, setIsEditingRanks] = useState(false)
   const [tempRanks, setTempRanks] = useState({})
 
+  const [editingRatingId, setEditingRatingId] = useState(null)
+  const [tempRatingValue, setTempRatingValue] = useState(5)
+
+  const handleSaveRating = async (item) => {
+    setIsUpdating(true)
+    try {
+      // 1. Save the new rating
+      if (isGame) {
+        await gamesApi.update(item.id, { my_rating: tempRatingValue })
+      } else {
+        await popcornApi.update(item.id, { my_rating: tempRatingValue })
+      }
+
+      // 2. Build the updated rating list (swap in the new rating for the edited item)
+      const updatedList = rankedItems.map(x => ({
+        id: x.id,
+        my_rating: x.id === item.id ? tempRatingValue : (x.my_rating ?? 0),
+        currentRank: x.rank
+      }))
+
+      // 3. Sort by rating descending (highest rating = rank #1)
+      //    Ties keep their relative current order
+      updatedList.sort((a, b) => {
+        if (b.my_rating !== a.my_rating) return b.my_rating - a.my_rating
+        return a.currentRank - b.currentRank
+      })
+
+      // 4. Assign new sequential ranks and update only what changed
+      for (let i = 0; i < updatedList.length; i++) {
+        const newRank = i + 1
+        if (updatedList[i].currentRank !== newRank) {
+          if (isGame) {
+            await gamesApi.update(updatedList[i].id, { rank: newRank })
+          } else {
+            await popcornApi.update(updatedList[i].id, { rank: newRank })
+          }
+        }
+      }
+
+      toast.success(`Rating updated — "${item.title}" re-ranked!`)
+      setEditingRatingId(null)
+      await fetchEntries()
+    } catch (err) {
+      toast.error('Failed to update rating')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   const handleSaveRanks = async () => {
     setIsUpdating(true)
     try {
@@ -560,13 +609,35 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
     try {
       const selectedItem = entries.find(x => x.id === parseInt(selectedAddId))
       if (selectedItem) {
-        const nextRank = rankedItems.length + 1
-        if (isGame) {
-          await gamesApi.update(selectedItem.id, { rank: nextRank })
-        } else {
-          await popcornApi.update(selectedItem.id, { rank: nextRank })
+        const newRating = selectedItem.my_rating ?? 0
+
+        // Find insertion rank: insert before the first ranked item with a lower rating
+        let insertAt = rankedItems.length + 1
+        for (let i = 0; i < rankedItems.length; i++) {
+          const existingRating = rankedItems[i].my_rating ?? 0
+          if (newRating > existingRating) {
+            insertAt = rankedItems[i].rank
+            break
+          }
         }
-        toast.success(`"${selectedItem.title}" ranked #${nextRank}!`)
+
+        // Shift ranks of existing items at insertAt and below down by 1
+        const itemsToShift = rankedItems.filter(x => x.rank >= insertAt)
+        for (const other of itemsToShift) {
+          if (isGame) {
+            await gamesApi.update(other.id, { rank: other.rank + 1 })
+          } else {
+            await popcornApi.update(other.id, { rank: other.rank + 1 })
+          }
+        }
+
+        // Assign the computed rank to the new item
+        if (isGame) {
+          await gamesApi.update(selectedItem.id, { rank: insertAt })
+        } else {
+          await popcornApi.update(selectedItem.id, { rank: insertAt })
+        }
+        toast.success(`"${selectedItem.title}" ranked #${insertAt}!`)
         setSelectedAddId('')
         await fetchEntries()
       }
@@ -739,6 +810,7 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
           {rankedItems.map((item, index) => {
             const isTop3 = item.rank <= 3
             const rankLabel = item.rank === 1 ? '🥇 1st' : item.rank === 2 ? '🥈 2nd' : item.rank === 3 ? '🥉 3rd' : `#${item.rank}`
+            const rankLabelMobile = item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : `#${item.rank}`
             const rankBadgeColor = item.rank === 1
               ? 'bg-yellow-500/10 border-yellow-500/30 text-amber-300 shadow-[0_0_15px_rgba(234,179,8,0.15)] font-black text-xs scale-[1.05]'
               : item.rank === 2
@@ -747,14 +819,19 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                   ? 'bg-amber-600/10 border-amber-600/30 text-amber-500 font-black text-xs'
                   : 'bg-midnight/80 border-white/5 text-slate-400 text-[11px] font-bold'
 
+            const hasReview = item.reasons_for_liking &&
+              !item.reasons_for_liking.startsWith('Selected during onboarding') &&
+              !item.reasons_for_liking.startsWith('Saved from')
+
             return (
               <div
                 key={item.id}
-                className="group relative bg-ink/40 hover:bg-ink/60 border border-white/10 hover:border-white/10 p-4 rounded-3xl flex items-center justify-between gap-4 transition-all duration-300 backdrop-blur-md"
+                className={`group relative bg-ink/40 hover:bg-ink/60 border border-white/10 hover:border-white/10 rounded-3xl flex flex-col transition-all duration-300 backdrop-blur-md overflow-hidden`}
               >
-                {/* Left side: Rank, Image and metadata */}
-                <div className="flex items-center gap-4 min-w-0 flex-1">
-                  {/* Rank Badge or Input */}
+                {/* ── TOP ROW ── rank | poster | info | [desktop: review] | buttons */}
+                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4">
+
+                  {/* Rank badge / rank input */}
                   {isEditingRanks ? (
                     <input
                       type="number"
@@ -762,78 +839,158 @@ const LeaderboardPanel = ({ entries, isGame, fetchEntries, popcornApi, gamesApi,
                       value={tempRanks[item.id] !== undefined ? tempRanks[item.id] : ''}
                       onChange={(e) => {
                         const val = e.target.value === '' ? '' : parseInt(e.target.value)
-                        setTempRanks(prev => ({
-                          ...prev,
-                          [item.id]: val
-                        }))
+                        setTempRanks(prev => ({ ...prev, [item.id]: val }))
                       }}
-                      className={`w-16 h-8 text-center bg-midnight border ${
+                      className={`w-12 sm:w-16 h-8 text-center bg-midnight border ${
                         isGame ? 'border-cyan-500/50 focus:border-cyan-500' : 'border-indigo-500/50 focus:border-indigo-500'
-                      } rounded-xl text-xs font-black text-white outline-none transition-all`}
+                      } rounded-xl text-xs font-black text-white outline-none transition-all shrink-0`}
                     />
                   ) : (
-                    <div className={`w-16 h-8 flex items-center justify-center rounded-xl border shrink-0 uppercase tracking-wider transition-transform duration-300 ${rankBadgeColor}`}>
-                      {rankLabel}
+                    <div className={`w-10 h-10 sm:w-16 sm:h-8 flex items-center justify-center rounded-xl border shrink-0 uppercase tracking-wider transition-transform duration-300 ${rankBadgeColor}`}>
+                      <span className="sm:hidden text-base leading-none">{rankLabelMobile}</span>
+                      <span className="hidden sm:inline text-[10px]">{rankLabel}</span>
                     </div>
                   )}
 
-                  {/* Thumbnail */}
+                  {/* Poster */}
                   {item.poster_url ? (
                     <img
                       src={item.poster_url}
                       alt={item.title}
-                      className="w-10 h-14 object-cover rounded-xl border border-white/5 shadow-md shrink-0"
+                      className="w-10 h-14 sm:w-11 sm:h-16 object-cover rounded-xl border border-white/5 shadow-md shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-14 bg-midnight rounded-xl border border-white/5 flex items-center justify-center shrink-0">
-                      {isGame ? <Gamepad className="w-5 h-5 text-slate-600" /> : <Film className="w-5 h-5 text-slate-600" />}
+                    <div className="w-10 h-14 sm:w-11 sm:h-16 bg-midnight rounded-xl border border-white/5 flex items-center justify-center shrink-0">
+                      {isGame ? <Gamepad className="w-4 h-4 text-slate-600" /> : <Film className="w-4 h-4 text-slate-600" />}
                     </div>
                   )}
 
-                  {/* Text details */}
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-xs sm:text-sm font-black text-white truncate" title={item.title}>
+                  {/* Title + category + rating — flex-1 on mobile, fixed width on desktop */}
+                  <div className="flex-1 sm:flex-none sm:w-48 md:w-56 min-w-0">
+                    <h4 className="text-xs sm:text-sm font-black text-white truncate leading-snug" title={item.title}>
                       {item.title}
                     </h4>
-                    <p className="text-[9px] font-bold text-slate-500 mt-0.5 uppercase tracking-wider">
+                    <p className="text-[9px] font-bold text-slate-500 mt-0.5 uppercase tracking-wider truncate">
                       {isGame ? item.platform : item.category}
                     </p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      {item.my_rating && (
-                        <div className="flex items-center gap-2">
-                          {/* Mobile compact rating */}
-                          <div className="flex sm:hidden items-center gap-1 text-[10px] font-black text-amber-300">
-                            <span>My Rating:</span>
-                            <span>{Number(item.my_rating).toFixed(1)}</span>
-                            {isGame ? <Gamepad className="w-3.5 h-3.5 text-cyan-400" /> : <PopcornIcon className="w-3.5 h-3.5 text-indigo-500" />}
-                          </div>
-                          {/* Desktop full rating */}
-                          <div className="hidden sm:flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-400">My Rating:</span>
-                            <PopcornRating rating={item.my_rating} isGame={isGame} />
-                          </div>
-                        </div>
-                      )}
-                      {item.genres && (
-                        <span className="text-[10px] text-slate-500 truncate hidden sm:inline">
-                          {item.genres.split(', ').slice(0, 2).join(' • ')}
+                    {item.my_rating && (
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className={`text-[10px] font-black ${isGame ? 'text-cyan-300' : 'text-amber-300'}`}>
+                          {Number(item.my_rating).toFixed(1)}
                         </span>
-                      )}
-                    </div>
+                        <div className="hidden sm:flex">
+                          <PopcornRating rating={item.my_rating} isGame={isGame} />
+                        </div>
+                        {item.genres && (
+                          <span className="text-[10px] text-slate-500 truncate hidden sm:inline">
+                            · {item.genres.split(', ').slice(0, 2).join(' • ')}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Centre review — desktop only, always rendered to prevent gap */}
+                  <div className={`hidden sm:flex flex-1 min-w-0 items-center px-4 border-l ${
+                    isGame ? 'border-cyan-500/15' : 'border-indigo-500/15'
+                  }`}>
+                    {hasReview ? (
+                      <div className="min-w-0">
+                        <p className={`text-[9px] font-bold uppercase tracking-widest mb-0.5 ${isGame ? 'text-cyan-500/50' : 'text-indigo-400/50'}`}>
+                          My Review
+                        </p>
+                        <p className="text-[11px] text-slate-300 italic leading-relaxed line-clamp-2">
+                          &ldquo;{item.reasons_for_liking}&rdquo;
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-slate-700 italic">No review yet.</p>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                    {editingRatingId !== item.id && (
+                      <button
+                        onClick={() => {
+                          setTempRatingValue(item.my_rating ? parseFloat(item.my_rating) : 3.0)
+                          setEditingRatingId(item.id)
+                        }}
+                        disabled={isUpdating || isEditingRanks}
+                        className={`p-1.5 sm:p-2 rounded-xl border transition-all ${
+                          isGame
+                            ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border-cyan-500/15'
+                            : 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 border-indigo-500/15'
+                        } disabled:opacity-40 disabled:pointer-events-none`}
+                        title="Edit My Rating"
+                      >
+                        <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleRemove(item)}
+                      disabled={isUpdating}
+                      className="p-1.5 sm:p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-xl border border-red-500/15 transition-all"
+                      title="Remove from Leaderboard"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Right side: Delete Controls */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => handleRemove(item)}
-                    disabled={isUpdating}
-                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-xl border border-red-500/15 transition-all"
-                    title="Remove from Leaderboard"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {/* ── MOBILE review note strip (shown only on small screens) ── */}
+                {hasReview && (
+                  <div className={`sm:hidden px-3 pb-3 -mt-1`}>
+                    <div className={`pl-3 py-1.5 border-l-2 rounded-r-lg ${
+                      isGame ? 'border-cyan-500/30 bg-cyan-500/5' : 'border-indigo-500/30 bg-indigo-500/5'
+                    }`}>
+                      <p className="text-[10px] text-slate-300 italic leading-relaxed line-clamp-2">
+                        &ldquo;{item.reasons_for_liking}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Rating slider panel (expands below when editing) ── */}
+                {editingRatingId === item.id && (
+                  <div className={`px-3 sm:px-5 pb-4 pt-3 border-t animate-in slide-in-from-top-1 duration-200 ${
+                    isGame ? 'border-cyan-500/20' : 'border-indigo-500/20'
+                  }`}>
+                    <div className="flex items-center justify-between mb-0">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                        Edit Rating&nbsp;—&nbsp;
+                        <span className={`text-sm font-black ${isGame ? 'text-cyan-300' : 'text-amber-300'}`}>
+                          {Number(tempRatingValue).toFixed(1)}
+                        </span>
+                        <span className="text-slate-500"> / 5.0</span>
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleSaveRating(item)}
+                          disabled={isUpdating}
+                          className={`px-3 py-1 rounded-xl text-[10px] font-bold text-white flex items-center gap-1 transition-all ${
+                            isGame ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-indigo-600 hover:bg-indigo-500'
+                          } disabled:opacity-40`}
+                        >
+                          {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingRatingId(null)}
+                          disabled={isUpdating}
+                          className="px-3 py-1 rounded-xl text-[10px] font-bold text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                    <PopcornSlider
+                      value={tempRatingValue}
+                      onChange={setTempRatingValue}
+                      isGame={isGame}
+                    />
+                  </div>
+                )}
               </div>
             )
           })}
@@ -2030,8 +2187,33 @@ export default function PopcornDashboard() {
         ? (isGame ? !selectedEntry.is_played : !selectedEntry.is_seen)
         : true
 
-      const currentRankedCount = entries.filter(e => e.rank !== null && e.rank !== undefined).length
-      const nextRank = isFirstSeen ? currentRankedCount + 1 : selectedEntry.rank
+      const currentRankedEntries = entries
+        .filter(e => e.rank !== null && e.rank !== undefined)
+        .sort((a, b) => a.rank - b.rank)
+
+      // Compute rating-based insertion rank for new leaderboard entries
+      let nextRank
+      if (isFirstSeen) {
+        const newRating = seenRating ?? 0
+        nextRank = currentRankedEntries.length + 1
+        for (let i = 0; i < currentRankedEntries.length; i++) {
+          if (newRating > (currentRankedEntries[i].my_rating ?? 0)) {
+            nextRank = currentRankedEntries[i].rank
+            break
+          }
+        }
+        // Shift existing items at nextRank and below down by 1
+        const itemsToShift = currentRankedEntries.filter(x => x.rank >= nextRank)
+        for (const other of itemsToShift) {
+          if (isGame) {
+            await gamesApi.update(other.id, { rank: other.rank + 1 })
+          } else {
+            await popcornApi.update(other.id, { rank: other.rank + 1 })
+          }
+        }
+      } else {
+        nextRank = selectedEntry.rank
+      }
 
       if (selectedEntry.id) {
         // Update existing entry in database
